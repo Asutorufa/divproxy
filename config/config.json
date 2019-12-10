@@ -1,0 +1,15 @@
+{
+    "nodes": {
+        "xxx": {
+            "Scheme": "socks5",
+            "Opaque": "",
+            "User": null,
+            "Host": "127.0.0.1:1080",
+            "Path": "",
+            "RawPath": "",
+            "ForceQuery": false,
+            "RawQuery": "user=xxx\u0026password=xxx",
+            "Fragment": ""
+        }
+    }
+}
