@@ -60,7 +60,7 @@ function ruleTableInit(){
                         <tr>
                             <td>${arr[0]}</td>
                             <td>${arr[1]}</td>
-                            <td><button type="button" class="btn bth-default">DELETE</button></td>
+                            <td><button type="button" class="btn bth-default" onclick="deleteRule('${arr[0]}')">DELETE</button></td>
                         </tr>`)
         // console.log('访问时间：%s %s', arr[0], arr[1]);
     });
@@ -72,9 +72,26 @@ function settingInit() {
     let bypassSetting = $("#bypassSetting");
     let directSetting = $("#directSetting");
     let proxySetting = $("#proxyOnlySetting");
-    if (bypassSetting.prop("checked")){
-        moreSetting.css("display","none")
-    }
+
+    fs.readFile('./config/config.json',function (err,data) {
+        if(err){
+            console.log(err)
+        }
+        let proxy = JSON.parse(data);
+        let setting = proxy["setting"];
+        $("#dnsSetting").val(setting["dns"]);
+        $("#socks5Setting").val(setting["socks_5"]);
+        $("#httpSetting").val(setting["http"]);
+        bypassSetting.prop("checked",setting["bypass"]);
+        directSetting.prop("checked",setting["direct"]);
+        $("#proxyOnlySetting").val(setting["proxy"]);
+        if (bypassSetting.prop("checked")){
+            moreSetting.css("display","none")
+        }
+        if (directSetting.prop("checked")){
+            proxySetting.attr("disabled","disabled")
+        }
+    });
     bypassSetting.change(
         function () {
             if ($(this).prop("checked")){
@@ -94,6 +111,29 @@ function settingInit() {
         }
     )
 }
+
+function getAlert(str) {
+    return `
+            <div class="alert alert-success alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert"
+                        aria-hidden="true">
+                    &times;
+                </button>
+                ${str}
+            </div>
+    `
+
+}
+const deleteProxy = id => {
+    $("#proxyWar").html(getAlert("删除"+id+"成功!"));
+    proxyTableInit();
+};
+
+const deleteRule = id => {
+    $("#ruleWar").html(getAlert("删除"+id+"成功!"));
+    ruleTableInit();
+};
+
 function proxyTableInit(){
     $("#proxyTable").empty();
     fs.readFile('./config/config.json',function (err,data) {
@@ -107,15 +147,12 @@ function proxyTableInit(){
                 let node = nodes[key];
                 $("#proxyTable").append(`
                         <tr>
+                            <td>${key}</td>
                             <td>${node["Scheme"]}</td>
                             <td>${node["Host"]}</td>
+                            <td><button type="button" class="btn bth-default" onclick="deleteProxy('${key}')">DELETE</button></td>
                         </tr>`)
             }
         }
     })
 }
-
-$(document).ready(
-    function () {
-    }
-);

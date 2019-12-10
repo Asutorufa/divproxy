@@ -1,6 +1,6 @@
 {
     "nodes": {
-        "xxx": {
+        "url1": {
             "Scheme": "socks5",
             "Opaque": "",
             "User": null,
@@ -10,6 +10,25 @@
             "ForceQuery": false,
             "RawQuery": "user=xxx\u0026password=xxx",
             "Fragment": ""
+        },
+        "url2": {
+            "Scheme": "http",
+            "Opaque": "",
+            "User": null,
+            "Host": "127.0.0.1:8080",
+            "Path": "",
+            "RawPath": "",
+            "ForceQuery": false,
+            "RawQuery": "",
+            "Fragment": ""
         }
+    },
+    "setting": {
+        "dns": "8.8.8.8:53",
+        "socks_5": "127.0.0.1:1081",
+        "http": "127.0.0.1:8081",
+        "bypass": true,
+        "direct": false,
+        "proxy": ""
     }
 }
