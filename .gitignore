@@ -3,3 +3,4 @@
 /.vscode/
 /<where you want the provisioner to install the dependencies>/
 /node_modules/
+/.idea/
