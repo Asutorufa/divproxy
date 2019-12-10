@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7522bd7a-c22e-49c5-86d1-7c2dad5ab8a2" name="Default Changelist" comment="" />
+    <list default="true" id="7522bd7a-c22e-49c5-86d1-7c2dad5ab8a2" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -18,7 +21,11 @@
     </option>
   </component>
   <component name="GOROOT" path="/usr/lib/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="1Udl1oT1Aobadp5W5kujBjwSLF6" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -144,22 +151,22 @@
       <screen x="0" y="30" width="1920" height="1050" />
     </state>
     <state x="626" y="318" key="#com.intellij.fileTypes.FileTypeChooser/0.30.1920.1050@0.30.1920.1050" timestamp="1575872547362" />
-    <state width="1860" height="264" key="GridCell.Tab.0.bottom" timestamp="1575946147608">
+    <state width="1860" height="264" key="GridCell.Tab.0.bottom" timestamp="1575946498924">
       <screen x="0" y="30" width="1920" height="1050" />
     </state>
-    <state width="1860" height="264" key="GridCell.Tab.0.bottom/0.30.1920.1050@0.30.1920.1050" timestamp="1575946147608" />
-    <state width="1860" height="264" key="GridCell.Tab.0.center" timestamp="1575946147607">
+    <state width="1860" height="264" key="GridCell.Tab.0.bottom/0.30.1920.1050@0.30.1920.1050" timestamp="1575946498924" />
+    <state width="1860" height="264" key="GridCell.Tab.0.center" timestamp="1575946498923">
       <screen x="0" y="30" width="1920" height="1050" />
     </state>
-    <state width="1860" height="264" key="GridCell.Tab.0.center/0.30.1920.1050@0.30.1920.1050" timestamp="1575946147607" />
-    <state width="1860" height="264" key="GridCell.Tab.0.left" timestamp="1575946147607">
+    <state width="1860" height="264" key="GridCell.Tab.0.center/0.30.1920.1050@0.30.1920.1050" timestamp="1575946498923" />
+    <state width="1860" height="264" key="GridCell.Tab.0.left" timestamp="1575946498922">
       <screen x="0" y="30" width="1920" height="1050" />
     </state>
-    <state width="1860" height="264" key="GridCell.Tab.0.left/0.30.1920.1050@0.30.1920.1050" timestamp="1575946147607" />
-    <state width="1860" height="264" key="GridCell.Tab.0.right" timestamp="1575946147608">
+    <state width="1860" height="264" key="GridCell.Tab.0.left/0.30.1920.1050@0.30.1920.1050" timestamp="1575946498922" />
+    <state width="1860" height="264" key="GridCell.Tab.0.right" timestamp="1575946498924">
       <screen x="0" y="30" width="1920" height="1050" />
     </state>
-    <state width="1860" height="264" key="GridCell.Tab.0.right/0.30.1920.1050@0.30.1920.1050" timestamp="1575946147608" />
+    <state width="1860" height="264" key="GridCell.Tab.0.right/0.30.1920.1050@0.30.1920.1050" timestamp="1575946498924" />
     <state x="647" y="74" key="refactoring.ChangeSignatureDialog" timestamp="1575868916712">
       <screen x="0" y="30" width="1920" height="1050" />
     </state>
