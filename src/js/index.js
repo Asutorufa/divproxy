@@ -64,6 +64,22 @@ function ruleTableInit(){
                         </tr>`)
         // console.log('访问时间：%s %s', arr[0], arr[1]);
     });
+
+
+    fs.readFile('./config/config.json',function (err,data) {
+        if (err) {
+            console.log(err)
+        }
+        let proxy = JSON.parse(data);
+        let nodes = proxy["nodes"];
+        let addRuleProxy = $("#addRuleProxy");
+        addRuleProxy.empty();
+        for (const key in nodes) {
+            if (nodes.hasOwnProperty(key)) {
+                addRuleProxy.append(`<option>${key}</option>`)
+            }
+        }
+    })
 }
 
 
@@ -92,6 +108,8 @@ function settingInit() {
         }
         if (directSetting.prop("checked")){
             proxySetting.attr("disabled","disabled")
+        }else{
+            proxySetting.removeAttr("disabled")
         }
         proxySetting.empty();
         for (const key in nodes){

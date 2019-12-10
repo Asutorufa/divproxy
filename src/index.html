@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <!--
-    <link rel="stylesheet" href="./css/twitter-bootstrap/3.3.7/bootstrap.min.css">
-    <link rel="stylesheet" href="./css/twitter-bootstrap/3.3.7/override.css">
-    -->
-    <link rel="stylesheet" href="./css/bootstrap/4.3.1/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="./css/bootstrap/4.3.1/bootstrap.min.css" crossorigin="anonymous">
     <!--
         Electron – How to add jQuery and Bootstrap to your project:
         https://www.ryadel.com/en/electron-jquery-bootstrap-project-add-npm
@@ -16,7 +12,7 @@
     <script>require('bootstrap');</script>
     <script>window.$ = window.jQuery = require('jquery');</script>
 </head>
-<body style="padding: 70px">
+<body style="padding-top: 70px">
     <nav class="navbar navbar-expand-sm bg-light navbar-light fixed-top" role="navigation">
         <a class="navbar-brand">DivProxy</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
@@ -31,7 +27,7 @@
                 </ul>
         </div>
     </nav>
-    <div id="content">
+    <div id="content" style="padding: 0 70px 0 70px">
         <div id="log">
             <div>log</div>
         </div>
@@ -52,27 +48,49 @@
 
                 </tbody>
             </table>
-            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">addProxy</button>
-            <button type="button" class="btn btn-light" id="deleteProxy">deleteProxy</button>
-
-            <div class="modal fade" id="myModal">
+            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModalProxy">addProxy</button>
+            <div class="modal fade" id="myModalProxy">
                 <div class="modal-dialog">
                     <div class="modal-content">
 
                         <!-- 模态框头部 -->
                         <div class="modal-header">
-                            <h4 class="modal-title">模态框头部</h4>
+                            <h4 class="modal-title">ADD PROXY</h4>
                             <button type="button" class="close" data-dismiss="modal">&times;</button>
                         </div>
 
                         <!-- 模态框主体 -->
                         <div class="modal-body">
-                            模态框内容..
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">NAME</span>
+                                </div>
+                                <label for="addProxyName"></label>
+                                <input type="text" class="form-control" id="addProxyName" placeholder="Name.."/>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">SCHEME</span>
+                                </div>
+                                <label for="addProxyScheme"></label>
+                                <select id="addProxyScheme" class="custom-select" data-style="btn-primary" >
+                                    <option>SOCKS5</option>
+                                    <option>HTTP/HTTPS</option>
+                                </select>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">HOST</span>
+                                </div>
+                                <label for="addProxyHost"></label>
+                                <input type="text" class="form-control" id="addProxyHost" placeholder="127.0.0.1:1080.."/>
+                            </div>
                         </div>
 
                         <!-- 模态框底部 -->
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">添加</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
                         </div>
 
                     </div>
@@ -95,6 +113,47 @@
 
                 </tbody>
             </table>
+
+            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModalRule">ADD RULE</button>
+            <div class="modal fade" id="myModalRule">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+
+                        <!-- 模态框头部 -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">ADD RULE</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <!-- 模态框主体 -->
+                        <div class="modal-body">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">CIDR/DOMAIN</span>
+                                </div>
+                                <label for="addRuleRule"></label>
+                                <input type="text" class="form-control" id="addRuleRule" placeholder="10.2.2.1/18.."/>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">PROXY</span>
+                                </div>
+                                <label for="addRuleProxy"></label>
+                                <select id="addRuleProxy" class="custom-select" data-style="btn-primary" >
+
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 模态框底部 -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">添加</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
         </div>
         <div id="setting" style="display: none">
             <form class="form" role="form">
@@ -102,37 +161,37 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text">DNS</span>
                     </div>
-                        <input type="text" class="form-control" id="dnsSetting" placeholder="8.8.8.8:53"/>
+                    <label for="dnsSetting"></label>
+                    <input type="text" class="form-control" id="dnsSetting" placeholder="8.8.8.8:53"/>
                 </div>
-                <br>
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
                         <span class="input-group-text">SOCKS5</span>
                     </div>
-                        <input type="text" class="form-control" id="socks5Setting" placeholder="127.0.0.1:1080"/>
+                    <label for="socks5Setting"></label>
+                    <input type="text" class="form-control" id="socks5Setting" placeholder="127.0.0.1:1080"/>
                 </div>
-                <br>
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
                         <span class="input-group-text">HTTP</span>
                     </div>
-                        <input type="text" class="form-control" id="httpSetting" placeholder="127.0.0.1:1080"/>
+                    <label for="httpSetting"></label>
+                    <input type="text" class="form-control" id="httpSetting" placeholder="127.0.0.1:1080"/>
                 </div>
-                <br>
                 <div class="custom-control custom-checkbox mb-3">
                             <input type="checkbox" class="custom-control-input" id="bypassSetting" name="example1">
                             <label class="custom-control-label" for="bypassSetting">BYPASS</label>
-                        </div>
+                </div>
                 <div id="moreSetting" style="display: none">
                     <div class="custom-control custom-checkbox mb-3 custom-control-inline">
                         <input type="checkbox" class="custom-control-input" id="directSetting">
                         <label class="custom-control-label" for="directSetting">DIRECT</label>
                     </div>
-                    <br>
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text">PROXY</span>
                         </div>
+                        <label for="proxyOnlySetting"></label>
                         <select id="proxyOnlySetting" class="custom-select" data-style="btn-primary" >
 
                         </select>
