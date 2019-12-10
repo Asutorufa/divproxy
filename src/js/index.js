@@ -46,7 +46,7 @@ function View(view) {
 
     $("#content").children().css("display","none");
     $("#"+view).css("display","block");
-    $("#navi").collapse('hide');
+    $("#collapsibleNavbar").collapse('hide');
 }
 
 function ruleTableInit(){
@@ -60,7 +60,7 @@ function ruleTableInit(){
                         <tr>
                             <td>${arr[0]}</td>
                             <td>${arr[1]}</td>
-                            <td><button type="button" class="btn bth-default" onclick="deleteRule('${arr[0]}')">DELETE</button></td>
+                            <td><button type="button" class="btn btn-light" onclick="deleteRule('${arr[0]}')">DELETE</button></td>
                         </tr>`)
         // console.log('访问时间：%s %s', arr[0], arr[1]);
     });
@@ -87,10 +87,13 @@ function settingInit() {
         directSetting.prop("checked",setting["direct"]);
         if (!bypassSetting.prop("checked")){
             moreSetting.css("display","block")
+        }else{
+            moreSetting.css("display","none")
         }
         if (directSetting.prop("checked")){
             proxySetting.attr("disabled","disabled")
         }
+        proxySetting.empty();
         for (const key in nodes){
             if (nodes.hasOwnProperty(key)){
                 proxySetting.append(`<option>${key}</option>`)
@@ -122,15 +125,10 @@ function settingInit() {
 
 function getAlert(str) {
     return `
-            <div class="alert alert-success alert-dismissable">
-                <button type="button" class="close" data-dismiss="alert"
-                        aria-hidden="true">
-                    &times;
-                </button>
-                ${str}
-            </div>
-    `
-
+<div class="alert alert-success alert-dismissible fade show">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+  <strong>${str}</strong>
+</div>`
 }
 const deleteProxy = id => {
     $("#proxyWar").html(getAlert("删除"+id+"成功!"));
@@ -158,7 +156,7 @@ function proxyTableInit(){
                             <td>${key}</td>
                             <td>${node["Scheme"]}</td>
                             <td>${node["Host"]}</td>
-                            <td><button type="button" class="btn bth-default" onclick="deleteProxy('${key}')">DELETE</button></td>
+                            <td><button type="button" class="btn btn-light" onclick="deleteProxy('${key}')">DELETE</button></td>
                         </tr>`)
             }
         }
