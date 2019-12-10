@@ -1,7 +1,9 @@
 package socks5server
 
 import (
+	"context"
 	"divproxy/config"
+	"errors"
 	"log"
 	"net"
 	"runtime"
@@ -13,21 +15,31 @@ import (
 
 // ServerSocks5 <--
 type ServerSocks5 struct {
-	Server             string
-	Port               string
-	Username           string
-	Password           string
-	MatcherFile        string
-	DNSServer          string
-	conn               *net.TCPListener
-	matcher            *matcher.Match
+	Server           string
+	Port             string
+	Username         string
+	Password         string
+	MatcherFile      string
+	DNSServer        string
+	Context          context.Context
+	ContextCloseConn context.Context
+	Cancel           context.CancelFunc
+	CancelCloseConn  context.CancelFunc
+	conn             *net.TCPListener
+	matcher          *matcher.Match
 }
 
-func (socks5Server *ServerSocks5) Socks5Init() error {
+func (socks5Server *ServerSocks5) socks5Init() error {
+	socks5Server.Context, socks5Server.Cancel = context.WithCancel(context.Background())
+	socks5Server.ContextCloseConn, socks5Server.CancelCloseConn = context.WithCancel(context.Background())
 	var err error
-	socks5Server.matcher, err = matcher.NewMatcherWithFile(socks5Server.DNSServer, socks5Server.MatcherFile)
-	if err != nil {
-		return err
+	if socks5Server.MatcherFile != "" {
+		socks5Server.matcher, err = matcher.NewMatcherWithFile(socks5Server.DNSServer, socks5Server.MatcherFile)
+		if err != nil {
+			return err
+		}
+	} else {
+		socks5Server.matcher = matcher.NewMatcher(socks5Server.DNSServer)
 	}
 	socks5ServerIP := net.ParseIP(socks5Server.Server)
 	socks5ServerPort, err := strconv.Atoi(socks5Server.Port)
@@ -41,7 +53,7 @@ func (socks5Server *ServerSocks5) Socks5Init() error {
 	return nil
 }
 
-func (socks5Server *ServerSocks5) Socks5AcceptARequest() error {
+func (socks5Server *ServerSocks5) socks5AcceptARequest() error {
 	client, err := socks5Server.conn.AcceptTCP()
 	if err != nil {
 		return err
@@ -61,14 +73,22 @@ func (socks5Server *ServerSocks5) Socks5AcceptARequest() error {
 
 // Socks5 <--
 func (socks5Server *ServerSocks5) Socks5() error {
-	if err := socks5Server.Socks5Init(); err != nil {
+	if err := socks5Server.socks5Init(); err != nil {
 		return err
 	}
-
 	for {
-		if err := socks5Server.Socks5AcceptARequest(); err != nil {
-			log.Println(err)
-			continue
+		select {
+		case <-socks5Server.Context.Done():
+			if err := socks5Server.conn.Close(); err != nil {
+				log.Println(err)
+			}
+			socks5Server.CancelCloseConn()
+			return errors.New("socks5 server close")
+		default:
+			if err := socks5Server.socks5AcceptARequest(); err != nil {
+				log.Println(err)
+				continue
+			}
 		}
 	}
 }
@@ -121,19 +141,23 @@ func (socks5Server *ServerSocks5) handleClientRequest(client net.Conn) {
 
 		switch b[1] {
 		case 0x01:
-			target,proxy := socks5Server.matcher.MatchStr(host)
+			target, proxy := socks5Server.matcher.MatchStr(host)
 			s, err := config.GetConfig()
-			if err != nil{
+			if err != nil {
 				log.Println(err)
 				return
 			}
-			server,err := getproxyconn.Forward(net.JoinHostPort(target, port),*s.Nodes[proxy])
-			if err != nil{
+			url := s.Nodes[proxy]
+			if url == nil {
+				url, err = url.Parse("direct://0.0.0.0:0")
+			}
+			server, err := getproxyconn.Forward(net.JoinHostPort(target, port), *url)
+			if err != nil {
 				log.Println(err)
 				return
 			}
 			_, _ = client.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}) //respond to connect successful
-			forward(client,server)
+			forward(client, server, socks5Server.Context)
 
 		case 0x02:
 			log.Println("bind 请求 " + net.JoinHostPort(host, port))
@@ -161,32 +185,38 @@ func (socks5Server *ServerSocks5) udp(client net.Conn, domain string) {
 	_, _ = client.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}) //respond to connect successful
 
 	// forward
-	forward(server, client)
+	forward(server, client, socks5Server.Context)
 }
 
-func forward(src, dst net.Conn) {
-	srcToDstCloseSig, dstToSrcCloseSig := make(chan error, 1), make(chan error, 1)
-	go pipe(src, dst, srcToDstCloseSig)
-	go pipe(dst, src, dstToSrcCloseSig)
-	<-srcToDstCloseSig
-	close(srcToDstCloseSig)
-	<-dstToSrcCloseSig
-	close(dstToSrcCloseSig)
+func forward(src, dst net.Conn, ctx context.Context) {
+	CloseSig := make(chan error, 0)
+	go pipe(src, dst, CloseSig, ctx)
+	go pipe(dst, src, CloseSig, ctx)
+	<-CloseSig
 	log.Println(runtime.NumGoroutine(), "close")
 }
 
-func pipe(src, dst net.Conn, closeSig chan error) {
+func pipe(src, dst net.Conn, closeSig chan error, ctx context.Context) {
 	buf := make([]byte, 0x400*32)
 	for {
-		n, err := src.Read(buf[0:])
-		if err != nil {
-			closeSig <- err
+		select {
+		case <-ctx.Done():
+			log.Println("close forward")
+			_ = src.Close()
+			_ = dst.Close()
+			closeSig <- nil
 			return
-		}
-		_, err = dst.Write(buf[0:n])
-		if err != nil {
-			closeSig <- err
-			return
+		default:
+			n, err := src.Read(buf[0:])
+			if err != nil {
+				closeSig <- err
+				return
+			}
+			_, err = dst.Write(buf[0:n])
+			if err != nil {
+				closeSig <- err
+				return
+			}
 		}
 	}
 }
