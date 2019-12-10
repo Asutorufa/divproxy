@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="./css/bootstrap-switch.min.css">
+    <link rel="stylesheet" href="./css/twitter-bootstrap/3.3.7/bootstrap.min.css">
     <!--
         Electron – How to add jQuery and Bootstrap to your project:
         https://www.ryadel.com/en/electron-jquery-bootstrap-project-add-npm
@@ -103,7 +102,7 @@
                             <input type="checkbox" id="bypassSetting">
                         </div>
                 </div>
-                <div id="moreSetting">
+                <div id="moreSetting" style="display: none">
                 <div class="form-group">
                     <label for="directSetting" class="col-sm-2 control-label">DIRECT</label>
                     <div class="col-sm-10">
@@ -113,7 +112,7 @@
                 <div class="form-group">
                     <label for="proxyOnlySetting" class="col-sm-2 control-label">PROXY</label>
                     <div class="custom-switch col-sm-10">
-                        <select id="proxyOnlySetting" class="form-control">
+                        <select id="proxyOnlySetting" class="form-control" data-style="btn-primary" >
 
                         </select>
                     </div>

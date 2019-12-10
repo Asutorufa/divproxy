@@ -79,17 +79,25 @@ function settingInit() {
         }
         let proxy = JSON.parse(data);
         let setting = proxy["setting"];
+        let nodes = proxy["nodes"];
         $("#dnsSetting").val(setting["dns"]);
         $("#socks5Setting").val(setting["socks_5"]);
         $("#httpSetting").val(setting["http"]);
         bypassSetting.prop("checked",setting["bypass"]);
         directSetting.prop("checked",setting["direct"]);
-        $("#proxyOnlySetting").val(setting["proxy"]);
-        if (bypassSetting.prop("checked")){
-            moreSetting.css("display","none")
+        if (!bypassSetting.prop("checked")){
+            moreSetting.css("display","block")
         }
         if (directSetting.prop("checked")){
             proxySetting.attr("disabled","disabled")
+        }
+        for (const key in nodes){
+            if (nodes.hasOwnProperty(key)){
+                proxySetting.append(`<option>${key}</option>`)
+            }
+        }
+        if (setting["proxy"] in nodes){
+            proxySetting.val(setting["proxy"]);
         }
     });
     bypassSetting.change(

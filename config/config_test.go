@@ -32,6 +32,7 @@ func TestConfig(t *testing.T) {
 	config.Setting.HTTP = "127.0.0.1:8081"
 	config.Setting.Bypass = true
 	config.Setting.Direct = false
+	config.Setting.Proxy = "url2"
 	if err = EnCodeJSON("config.json", config); err != nil {
 		t.Error(err)
 		return
