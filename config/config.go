@@ -16,21 +16,21 @@ type settingJSON struct {
 }
 
 // configJSON config json struct
-type configJSON struct {
+type ConfigJSON struct {
 	Nodes   map[string]*url.URL `json:"nodes"`
 	Setting *settingJSON        `json:"setting"`
 }
 
 // InitJSON init the config json file
 func InitJSON(configPath string) (err error) {
-	return EnCodeJSON(configPath, &configJSON{
+	return EnCodeJSON(configPath, &ConfigJSON{
 		Nodes:   map[string]*url.URL{},
 		Setting: &settingJSON{},
 	})
 }
 
-func DecodeJSON(configPath string) (pa *configJSON, err error) {
-	pa = &configJSON{}
+func DecodeJSON(configPath string) (pa *ConfigJSON, err error) {
+	pa = &ConfigJSON{}
 	file, err := os.Open(configPath)
 	if err != nil {
 		return
@@ -41,7 +41,7 @@ func DecodeJSON(configPath string) (pa *configJSON, err error) {
 	return
 }
 
-func EnCodeJSON(configPath string, pa *configJSON) (err error) {
+func EnCodeJSON(configPath string, pa *ConfigJSON) (err error) {
 	file, err := os.Create(configPath)
 	if err != nil {
 		return
@@ -54,6 +54,6 @@ func EnCodeJSON(configPath string, pa *configJSON) (err error) {
 	return
 }
 
-func GetConfig() (*configJSON, error) {
+func GetConfig() (*ConfigJSON, error) {
 	return DecodeJSON("./config/config.json")
 }
