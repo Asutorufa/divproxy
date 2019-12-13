@@ -1,39 +1,13 @@
 package getproxyconn
 
 import (
-	"divproxy/config"
 	"divproxy/net/proxy/socks5/client"
 	"net"
 	"net/url"
 	"time"
 )
 
-type Forward struct {
-	con *config.ConfigJSON
-}
-
-func NewForWard() (forward *Forward, err error) {
-	forward = &Forward{}
-	forward.con, err = config.GetConfig()
-	return
-}
-
-func (Forward *Forward) IsBypass(host string) (isBypass bool, proxy net.Conn) {
-	if Forward.con.Setting.Bypass {
-		return true, nil
-	} else {
-		if !Forward.con.Setting.Direct {
-			proxy, _ = Forward.ForwardTo(host, *Forward.con.Nodes[Forward.con.Setting.Proxy])
-		} else {
-			proxy, _ = toTCP(host)
-		}
-	}
-	return
-}
-
-func (Forward *Forward) ForwardTo(host string, proxy url.URL) (net.Conn, error) {
-	if !Forward.con.Setting.Bypass {
-	}
+func ForwardTo(host string, proxy url.URL) (net.Conn, error) {
 	switch proxy.Scheme {
 	case "socks5":
 		return toSocks5(host, proxy.Hostname(), proxy.Port())

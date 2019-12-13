@@ -7,9 +7,9 @@ import (
 	"net"
 	"strings"
 
-	"divproxy/net/cidrmatch"
 	"divproxy/net/dns"
-	"divproxy/net/domainmatch"
+	"divproxy/net/matcher/cidrmatch"
+	"divproxy/net/matcher/domainmatch"
 )
 
 type Match struct {

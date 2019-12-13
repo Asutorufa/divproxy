@@ -1,7 +1,8 @@
-package divproxyinit
+package MatchAndForward
 
 import (
 	"divproxy/config"
+	"divproxy/init"
 	"divproxy/net/forward"
 	"divproxy/net/matcher"
 	"log"
@@ -12,23 +13,28 @@ import (
 
 type ForwardTo struct {
 	Matcher *matcher.Match
-	forward *getproxyconn.Forward
-}
-
-func GetMatcher() (match *matcher.Match) {
-	match, err := matcher.NewMatcherWithFile("114.114.114.114:53", "./rule/rule.config")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	return
+	Config  *config.ConfigJSON
 }
 
 func NewForwardTo() (forwardTo *ForwardTo, err error) {
 	forwardTo = &ForwardTo{}
-	forwardTo.Matcher = GetMatcher()
-	if forwardTo.forward, err = getproxyconn.NewForWard(); err != nil {
+	forwardTo.Config, err = divproxyinit.GetConfig()
+	if err != nil {
 		return
+	}
+	forwardTo.Matcher, err = matcher.NewMatcherWithFile(forwardTo.Config.Setting.DNS, divproxyinit.GetRuleFilePath())
+	return
+}
+
+func (ForwardTo *ForwardTo) IsBypass(host string) (isBypass bool, proxy net.Conn) {
+	if ForwardTo.Config.Setting.Bypass {
+		return true, nil
+	} else {
+		if !ForwardTo.Config.Setting.Direct {
+			proxy, _ = getproxyconn.ForwardTo(host, *ForwardTo.Config.Nodes[ForwardTo.Config.Setting.Proxy])
+		} else {
+			proxy, _ = net.Dial("tcp", host)
+		}
 	}
 	return
 }
@@ -41,15 +47,11 @@ func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	isBypass, server := ForwardTo.forward.IsBypass(host)
+	isBypass, server := ForwardTo.IsBypass(host)
 	if isBypass {
 		if ForwardTo.Matcher != nil {
 			target, proxy = ForwardTo.Matcher.MatchStr(host)
-			s, err := config.GetConfig()
-			if err != nil {
-				return nil, err
-			}
-			URI = s.Nodes[proxy]
+			URI = ForwardTo.Config.Nodes[proxy]
 			if URI == nil {
 				URI, err = url.Parse("direct://0.0.0.0:0")
 				if err != nil {
@@ -65,7 +67,7 @@ func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
 			}
 		}
 
-		server, err = ForwardTo.forward.ForwardTo(net.JoinHostPort(target, URI.Port()), *URI)
+		server, err = getproxyconn.ForwardTo(net.JoinHostPort(target, URI.Port()), *URI)
 		if err != nil {
 			return nil, err
 		}

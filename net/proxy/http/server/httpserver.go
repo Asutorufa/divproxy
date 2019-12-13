@@ -46,7 +46,6 @@ func (HTTPServer *HTTPServer) Close() error {
 func (HTTPServer *HTTPServer) httpProxyAcceptARequest() error {
 	HTTPConn, err := HTTPServer.HTTPListener.AcceptTCP()
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -57,9 +56,7 @@ func (HTTPServer *HTTPServer) httpProxyAcceptARequest() error {
 		defer func() {
 			_ = HTTPConn.Close()
 		}()
-		// log.Println("线程数:", runtime.NumGoroutine())
-		err := HTTPServer.httpHandleClientRequest(HTTPConn)
-		if err != nil {
+		if err := HTTPServer.httpHandleClientRequest(HTTPConn); err != nil {
 			log.Println(err)
 			return
 		}
@@ -133,46 +130,32 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(HTTPConn net.Conn) error {
 	if requestMethod == "CONNECT" {
 		headerArgs["Host"] = headerRequestSplit[1]
 	}
+
 	hostPortURL, err := url.Parse("//" + headerArgs["Host"])
 	if err != nil {
 		return err
 	}
-	var address string
 	if hostPortURL.Port() == "" {
-		address = hostPortURL.Hostname() + ":80"
-		headerRequest = strings.ReplaceAll(headerRequest, "http://"+address, "")
-	} else {
-		address = hostPortURL.Host
-		//log.Println("address:", address)
+		hostPortURL.Host = hostPortURL.Host + ":80"
 	}
-	headerRequest = strings.ReplaceAll(headerRequest, "http://"+headerArgs["Host"], "")
+	headerRequest = strings.ReplaceAll(headerRequest, "http://"+hostPortURL.Host, "")
 	//microlog.Debug(headerArgs)
 	//microlog.Debug("requestMethod:",requestMethod)
 	//microlog.Debug("headerRequest ",headerRequest,"headerRequest end")
-	//microlog.Debug("address:", address)
 
 	for key, value := range headerArgs {
 		headerRequest += "\r\n" + key + ": " + value
 	}
 	headerRequest += "\r\n\r\n" + data
 
-	//var domainPort string
-	//if net.ParseIP(hostPortURL.Hostname()) == nil {
-	//	domainPort = strings.Split(address, ":")[1]
-	//} else if net.ParseIP(hostPortURL.Hostname()).To4() != nil {
-	//	domainPort = strings.Split(address, ":")[1]
-	//} else {
-	//	domainPort = strings.Split(address, "]:")[1]
-	//}
-
 	var Conn net.Conn
 	if HTTPServer.ForwardTo != nil {
-		Conn, err = HTTPServer.ForwardTo(address)
+		Conn, err = HTTPServer.ForwardTo(hostPortURL.Host)
 		if err != nil {
 			return err
 		}
 	} else {
-		Conn, err = net.Dial("tcp", address)
+		Conn, err = net.Dial("tcp", hostPortURL.Host)
 		if err != nil {
 			return err
 		}

@@ -53,7 +53,3 @@ func EnCodeJSON(configPath string, pa *ConfigJSON) (err error) {
 	}
 	return
 }
-
-func GetConfig() (*ConfigJSON, error) {
-	return DecodeJSON("./config/config.json")
-}
