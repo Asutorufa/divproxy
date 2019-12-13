@@ -9,13 +9,13 @@ type TrieTree struct {
 
 type node struct {
 	isLast bool
-	mark string
+	mark   string
 	left   *node
 	right  *node
 }
 
 // Insert insert node to tree
-func (trie *TrieTree) Insert(str,mark string) {
+func (trie *TrieTree) Insert(str, mark string) {
 	nodeTemp := trie.root
 	for i := 0; i < len(str); i++ {
 		// 1 byte is 49
@@ -40,7 +40,7 @@ func (trie *TrieTree) Insert(str,mark string) {
 }
 
 // Search search from trie tree
-func (trie *TrieTree) Search(str string) (isMatch bool,mark string) {
+func (trie *TrieTree) Search(str string) (isMatch bool, mark string) {
 	nodeTemp := trie.root
 	for i := 0; i < len(str); i++ {
 		if str[i] == 49 {
@@ -50,13 +50,13 @@ func (trie *TrieTree) Search(str string) (isMatch bool,mark string) {
 			nodeTemp = nodeTemp.left
 		}
 		if nodeTemp == nil {
-			return false,""
+			return false, ""
 		}
 		if nodeTemp.isLast == true {
-			return true,nodeTemp.mark
+			return true, nodeTemp.mark
 		}
 	}
-	return false,""
+	return false, ""
 }
 
 // GetRoot get root node
@@ -82,4 +82,3 @@ func NewTrieTree() *TrieTree {
 		root: &node{},
 	}
 }
-

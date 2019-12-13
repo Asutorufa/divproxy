@@ -39,18 +39,18 @@ func NewCidrMatchWithTrie(fileName string) (*CidrMatch, error) {
 func (cidrMatch *CidrMatch) insertCidrTrie(fileName string) {
 	configTemp, _ := ioutil.ReadFile(fileName)
 	for _, cidr := range strings.Split(string(configTemp), "\n") {
-		div := strings.Split(cidr," ")
-		if len(div) < 2{
+		div := strings.Split(cidr, " ")
+		if len(div) < 2 {
 			continue
 		}
-		if err := cidrMatch.InsetOneCIDR(div[0],div[1]); err != nil {
+		if err := cidrMatch.InsetOneCIDR(div[0], div[1]); err != nil {
 			continue
 		}
 	}
 }
 
 // InsetOneCIDR Insert one CIDR to cidr matcher
-func (cidrMatch *CidrMatch) InsetOneCIDR(cidr,mark string) error {
+func (cidrMatch *CidrMatch) InsetOneCIDR(cidr, mark string) error {
 	defer func() { //必须要先声明defer，否则不能捕获到panic异常
 		if err := recover(); err != nil {
 			log.Println(err)
@@ -66,10 +66,10 @@ func (cidrMatch *CidrMatch) InsetOneCIDR(cidr,mark string) error {
 	if net.ParseIP(ipAndMask[0]) != nil {
 		if net.ParseIP(ipAndMask[0]).To4() != nil {
 			c = IpAddrToInt(ipAndMask[0])
-			cidrMatch.v4CidrTrie.Insert(c[:maskSize],mark)
+			cidrMatch.v4CidrTrie.Insert(c[:maskSize], mark)
 		} else {
 			c = Ipv6AddrToInt(ToIpv6(ipAndMask[0]))
-			cidrMatch.v6CidrTrie.Insert(c[:maskSize],mark)
+			cidrMatch.v6CidrTrie.Insert(c[:maskSize], mark)
 		}
 	} else {
 		//	do something
@@ -79,7 +79,7 @@ func (cidrMatch *CidrMatch) InsetOneCIDR(cidr,mark string) error {
 }
 
 // MatchWithTrie match ip with trie
-func (cidrMatch *CidrMatch) MatchOneIP(ip string) (isMatch bool,mark string) {
+func (cidrMatch *CidrMatch) MatchOneIP(ip string) (isMatch bool, mark string) {
 	ipTmp := net.ParseIP(ip)
 	ipBinary := ""
 	if ipTmp.To4() != nil {
@@ -89,7 +89,7 @@ func (cidrMatch *CidrMatch) MatchOneIP(ip string) (isMatch bool,mark string) {
 		ipBinary = Ipv6AddrToInt(ToIpv6(ip))
 		return cidrMatch.v6CidrTrie.Search(ipBinary)
 	}
-	return false,""
+	return false, ""
 }
 
 // IpAddrToInt convert ipv4 to binary
@@ -249,4 +249,3 @@ func Ipv6AddrToInt(ipAddr string) string {
 
 	return sum1S + sum2S + sum3S + sum4S
 }
-

@@ -2,37 +2,26 @@ package socks5server
 
 import (
 	"context"
-	"divproxy/config"
 	"errors"
 	"log"
 	"net"
-	"net/url"
-	"runtime"
 	"strconv"
-
-	"divproxy/net/forward"
-	"divproxy/net/matcher"
 )
 
 // ServerSocks5 <--
 type ServerSocks5 struct {
-	Server   string
-	Port     string
-	Username string
-	Password string
-	Matcher  *matcher.Match
-	context  context.Context
-	cancel   context.CancelFunc
-	conn     *net.TCPListener
-	forward  *getproxyconn.Forward
+	Server    string
+	Port      string
+	Username  string
+	Password  string
+	ForwardTo func(host string) (net.Conn, error)
+	context   context.Context
+	cancel    context.CancelFunc
+	conn      *net.TCPListener
 }
 
 func (socks5Server *ServerSocks5) socks5Init() error {
 	socks5Server.context, socks5Server.cancel = context.WithCancel(context.Background())
-	socks5Server.forward = &getproxyconn.Forward{}
-	if err := socks5Server.forward.NewForWard(); err != nil {
-		return err
-	}
 	socks5ServerIP := net.ParseIP(socks5Server.Server)
 	socks5ServerPort, err := strconv.Atoi(socks5Server.Port)
 	if err != nil {
@@ -144,45 +133,18 @@ func (socks5Server *ServerSocks5) handleClientRequest(client net.Conn) error {
 
 		switch b[1] {
 		case 0x01:
-
-			var target string
-			var URI *url.URL
-			var proxy string
-			isBypass, server := socks5Server.forward.IsBypass(net.JoinHostPort(host, port))
-			if isBypass {
-				if socks5Server.Matcher != nil {
-					target, proxy = socks5Server.Matcher.MatchStr(host)
-					s, err := config.GetConfig()
-					if err != nil {
-						return err
-					}
-					URI = s.Nodes[proxy]
-					if URI == nil {
-						URI, err = url.Parse("direct://0.0.0.0:0")
-						if err != nil {
-							return err
-						}
-					}
-				} else {
-					target = host
-					proxy = "direct"
-					URI, err = url.Parse("direct://0.0.0.0:0")
-					if err != nil {
-						return err
-					}
-				}
-
-				server, err = socks5Server.forward.ForwardTo(net.JoinHostPort(target, port), *URI)
+			var server net.Conn
+			if socks5Server.ForwardTo != nil {
+				server, err = socks5Server.ForwardTo(net.JoinHostPort(host, port))
 				if err != nil {
 					return err
 				}
 			} else {
-				proxy = "no bypass"
+				server, err = net.Dial("tcp", net.JoinHostPort(host, port))
+				if err != nil {
+					return err
+				}
 			}
-			defer func() {
-				_ = server.Close()
-			}()
-			log.Println(runtime.NumGoroutine(), host, "match to", proxy)
 			forward(client, server)
 
 		case 0x02:

@@ -21,7 +21,7 @@ func BenchmarkDomainMatcher_Search(b *testing.B) {
 	root.Insert("www.baidu.sub.com.cn", "test_baidu")
 	root.Insert("www.google.com", "test_google")
 	b.StartTimer()
-	for n := 0; n<b.N; n++{
+	for n := 0; n < b.N; n++ {
 		root.Search("www.baidu.com")
 		//root.Search("www.baidu.sub.com.cn.net")
 	}

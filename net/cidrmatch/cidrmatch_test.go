@@ -6,10 +6,10 @@ import (
 
 func TestCidrMatch_InsetOneCIDR(t *testing.T) {
 	cidrMatch := NewCidrMatch()
-	if err := cidrMatch.InsetOneCIDR("10.2.2.1/18","testIPv4"); err != nil{
+	if err := cidrMatch.InsetOneCIDR("10.2.2.1/18", "testIPv4"); err != nil {
 		t.Error(err)
 	}
-	if err := cidrMatch.InsetOneCIDR("2001:0db8:0000:0000:1234:0000:0000:9abc/32","testIPv6"); err != nil{
+	if err := cidrMatch.InsetOneCIDR("2001:0db8:0000:0000:1234:0000:0000:9abc/32", "testIPv6"); err != nil {
 		t.Error(err)
 	}
 	testIPv4 := "10.2.2.1"
@@ -28,10 +28,10 @@ func BenchmarkCidrMatch_MatchOneIP(b *testing.B) {
 	//做一些初始化的工作,例如读取文件数据,数据库连接之类的,
 	//这样这些时间不影响我们测试函数本身的性能
 	cidrMatch := NewCidrMatch()
-	if err := cidrMatch.InsetOneCIDR("10.2.2.1/18","testIPv4"); err != nil{
+	if err := cidrMatch.InsetOneCIDR("10.2.2.1/18", "testIPv4"); err != nil {
 		b.Error(err)
 	}
-	if err := cidrMatch.InsetOneCIDR("2001:0db8:0000:0000:1234:0000:0000:9abc/32","testIPv6"); err != nil{
+	if err := cidrMatch.InsetOneCIDR("2001:0db8:0000:0000:1234:0000:0000:9abc/32", "testIPv6"); err != nil {
 		b.Error(err)
 	}
 	//testIPv4 := "10.2.2.1"

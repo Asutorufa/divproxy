@@ -12,8 +12,9 @@ type Forward struct {
 	con *config.ConfigJSON
 }
 
-func (Forward *Forward) NewForWard() (err error) {
-	Forward.con, err = config.GetConfig()
+func NewForWard() (forward *Forward, err error) {
+	forward = &Forward{}
+	forward.con, err = config.GetConfig()
 	return
 }
 

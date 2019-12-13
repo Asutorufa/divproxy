@@ -6,13 +6,8 @@ import (
 	"log"
 	"net"
 	"net/url"
-	"runtime"
 	"strconv"
 	"strings"
-
-	"divproxy/config"
-	"divproxy/net/forward"
-	"divproxy/net/matcher"
 )
 
 // HTTPServer like name
@@ -20,20 +15,16 @@ type HTTPServer struct {
 	HTTPListener *net.TCPListener
 	HTTPServer   string
 	HTTPPort     string
-	Matcher      *matcher.Match
+	ForwardTo    func(host string) (net.Conn, error)
 	context      context.Context
 	cancel       context.CancelFunc
-	forward      *getproxyconn.Forward
 }
 
 func (HTTPServer *HTTPServer) httpProxyInit() error {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
+	var err error
 	HTTPServer.context, HTTPServer.cancel = context.WithCancel(context.Background())
-	HTTPServer.forward = &getproxyconn.Forward{}
-	if err := HTTPServer.forward.NewForWard(); err != nil {
-		return err
-	}
 	socks5ToHTTPServerIP := net.ParseIP(HTTPServer.HTTPServer)
 	socks5ToHTTPServerPort, err := strconv.Atoi(HTTPServer.HTTPPort)
 	if err != nil {
@@ -174,47 +165,18 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(HTTPConn net.Conn) error {
 		domainPort = strings.Split(address, "]:")[1]
 	}
 
-	var target string
-	var proxy string
-	var URI *url.URL
-	isBypass, Conn := HTTPServer.forward.IsBypass(net.JoinHostPort(hostPortURL.Hostname(), domainPort))
-	if isBypass {
-		if HTTPServer.Matcher != nil {
-			target, proxy = HTTPServer.Matcher.MatchStr(hostPortURL.Hostname())
-			s, err := config.GetConfig()
-			if err != nil {
-				return err
-			}
-			URI = s.Nodes[proxy]
-			if URI == nil {
-				URI, err = url.Parse("direct://0.0.0.0:0")
-				if err != nil {
-					return err
-				}
-			}
-		} else {
-			target = hostPortURL.Hostname()
-			proxy = "direct"
-			URI, err = url.Parse("direct://0.0.0.0:0")
-			if err != nil {
-				return err
-			}
-		}
-		Conn, err = HTTPServer.forward.ForwardTo(net.JoinHostPort(target, domainPort), *URI)
+	var Conn net.Conn
+	if HTTPServer.ForwardTo != nil {
+		Conn, err = HTTPServer.ForwardTo(net.JoinHostPort(hostPortURL.Hostname(), domainPort))
 		if err != nil {
 			return err
 		}
 	} else {
-		proxy = "no bypass"
-	}
-	defer func() {
-		if err = Conn.Close(); err != nil {
-			log.Println(err)
+		Conn, err = net.Dial("tcp", net.JoinHostPort(hostPortURL.Hostname(), domainPort))
+		if err != nil {
+			return err
 		}
-	}()
-
-	log.Println(runtime.NumGoroutine(), hostPortURL.Hostname(), "match to", proxy)
-
+	}
 	switch {
 	case requestMethod == "CONNECT":
 		if _, err = HTTPConn.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {

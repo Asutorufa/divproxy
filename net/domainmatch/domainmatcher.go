@@ -7,7 +7,7 @@ import (
 
 type node struct {
 	isLast bool
-	mark string
+	mark   string
 	child  map[string]*node
 }
 
@@ -15,7 +15,7 @@ type DomainMatcher struct {
 	root *node
 }
 
-func (domainMatcher *DomainMatcher) Insert(domain,mark string) {
+func (domainMatcher *DomainMatcher) Insert(domain, mark string) {
 	tmp := domainMatcher.root
 	splitTmp := strings.Split(domain, ".")
 	for index, n := range splitTmp {
@@ -39,15 +39,15 @@ func (domainMatcher *DomainMatcher) Insert(domain,mark string) {
 func (domainMatcher *DomainMatcher) InsertWithFile(fileName string) {
 	configTemp, _ := ioutil.ReadFile(fileName)
 	for _, s := range strings.Split(string(configTemp), "\n") {
-		div := strings.Split(s," ")
-		if len(div) < 2{
+		div := strings.Split(s, " ")
+		if len(div) < 2 {
 			continue
 		}
-		domainMatcher.Insert(div[0],div[1])
+		domainMatcher.Insert(div[0], div[1])
 	}
 }
 
-func (domainMatcher *DomainMatcher) Search(domain string) (isMatcher bool,mark string) {
+func (domainMatcher *DomainMatcher) Search(domain string) (isMatcher bool, mark string) {
 	tmp := domainMatcher.root
 	isFirst := true
 	splitTmp := strings.Split(domain, ".")
@@ -59,19 +59,19 @@ func (domainMatcher *DomainMatcher) Search(domain string) (isMatcher bool,mark s
 			}
 		}
 		if !ok {
-			return false,""
+			return false, ""
 		}
 		if index == len(splitTmp)-1 {
-			if tmp.child[n].isLast == true{
-				return true,tmp.child[n].mark
-			}else {
-				return false,""
+			if tmp.child[n].isLast == true {
+				return true, tmp.child[n].mark
+			} else {
+				return false, ""
 			}
 		}
 		tmp = tmp.child[n]
 		isFirst = false
 	}
-	return false,""
+	return false, ""
 }
 
 func NewDomainMatcher() *DomainMatcher {
