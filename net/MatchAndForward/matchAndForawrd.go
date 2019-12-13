@@ -32,8 +32,10 @@ func (ForwardTo *ForwardTo) IsBypass(host string) (isBypass bool, proxy net.Conn
 	} else {
 		if !ForwardTo.Config.Setting.Direct {
 			proxy, _ = getproxyconn.ForwardTo(host, *ForwardTo.Config.Nodes[ForwardTo.Config.Setting.Proxy])
+			log.Println(runtime.NumGoroutine(), "Mode: Only Proxy| Domain:", host, "| Proxy:", ForwardTo.Config.Setting.Proxy)
 		} else {
 			proxy, _ = net.Dial("tcp", host)
+			log.Println(runtime.NumGoroutine(), host, "Mode: Direct| Domain:", host)
 		}
 	}
 	return
@@ -71,9 +73,7 @@ func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		proxy = "no bypass"
+		log.Println(runtime.NumGoroutine(), "Mode: Bypass| Domain:", host, "| match to", proxy)
 	}
-	log.Println(runtime.NumGoroutine(), host, "match to", proxy)
 	return server, nil
 }
