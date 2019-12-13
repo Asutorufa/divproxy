@@ -145,6 +145,9 @@ func (socks5Server *ServerSocks5) handleClientRequest(client net.Conn) error {
 					return err
 				}
 			}
+			defer func() {
+				_ = server.Close()
+			}()
 			forward(client, server)
 
 		case 0x02:

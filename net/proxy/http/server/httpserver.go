@@ -177,6 +177,9 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(HTTPConn net.Conn) error {
 			return err
 		}
 	}
+	defer func() {
+		_ = Conn.Close()
+	}()
 
 	switch {
 	case requestMethod == "CONNECT":
