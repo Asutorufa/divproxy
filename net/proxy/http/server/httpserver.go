@@ -156,27 +156,28 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(HTTPConn net.Conn) error {
 	}
 	headerRequest += "\r\n\r\n" + data
 
-	var domainPort string
-	if net.ParseIP(hostPortURL.Hostname()) == nil {
-		domainPort = strings.Split(address, ":")[1]
-	} else if net.ParseIP(hostPortURL.Hostname()).To4() != nil {
-		domainPort = strings.Split(address, ":")[1]
-	} else {
-		domainPort = strings.Split(address, "]:")[1]
-	}
+	//var domainPort string
+	//if net.ParseIP(hostPortURL.Hostname()) == nil {
+	//	domainPort = strings.Split(address, ":")[1]
+	//} else if net.ParseIP(hostPortURL.Hostname()).To4() != nil {
+	//	domainPort = strings.Split(address, ":")[1]
+	//} else {
+	//	domainPort = strings.Split(address, "]:")[1]
+	//}
 
 	var Conn net.Conn
 	if HTTPServer.ForwardTo != nil {
-		Conn, err = HTTPServer.ForwardTo(net.JoinHostPort(hostPortURL.Hostname(), domainPort))
+		Conn, err = HTTPServer.ForwardTo(address)
 		if err != nil {
 			return err
 		}
 	} else {
-		Conn, err = net.Dial("tcp", net.JoinHostPort(hostPortURL.Hostname(), domainPort))
+		Conn, err = net.Dial("tcp", address)
 		if err != nil {
 			return err
 		}
 	}
+
 	switch {
 	case requestMethod == "CONNECT":
 		if _, err = HTTPConn.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {

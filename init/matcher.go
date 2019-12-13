@@ -2,7 +2,7 @@ package divproxyinit
 
 import (
 	"divproxy/config"
-	getproxyconn "divproxy/net/forward"
+	"divproxy/net/forward"
 	"divproxy/net/matcher"
 	"log"
 	"net"
