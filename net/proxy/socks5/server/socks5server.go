@@ -151,10 +151,10 @@ func (socks5Server *ServerSocks5) handleClientRequest(client net.Conn) error {
 			forward(client, server)
 
 		case 0x02:
-			log.Println("bind 请求 " + net.JoinHostPort(host, port))
+			log.Println("bind request " + net.JoinHostPort(host, port))
 
 		case 0x03:
-			log.Println("udp 请求 " + net.JoinHostPort(host, port))
+			log.Println("udp request " + net.JoinHostPort(host, port))
 			socks5Server.udp(client, net.JoinHostPort(host, port))
 		}
 	}
