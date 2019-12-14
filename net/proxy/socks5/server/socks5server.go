@@ -165,10 +165,13 @@ func (socks5Server *ServerSocks5) handleClientRequest(client net.Conn) error {
 }
 
 func forward(src, dst net.Conn) {
-	CloseSig := make(chan error, 0)
+	CloseSig, CloseSig2 := make(chan error, 0), make(chan error, 0)
 	go pipe(src, dst, CloseSig)
-	go pipe(dst, src, CloseSig)
+	go pipe(dst, src, CloseSig2)
 	<-CloseSig
+	close(CloseSig)
+	<-CloseSig2
+	close(CloseSig2)
 }
 
 func pipe(src, dst net.Conn, closeSig chan error) {
