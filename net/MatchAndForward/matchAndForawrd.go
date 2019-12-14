@@ -26,33 +26,21 @@ func NewForwardTo() (forwardTo *ForwardTo, err error) {
 	return
 }
 
-func (ForwardTo *ForwardTo) IsBypass(host string) (isBypass bool, proxy net.Conn) {
-	if ForwardTo.Config.Setting.Bypass {
-		return true, nil
-	} else {
-		if !ForwardTo.Config.Setting.Direct {
-			proxy, _ = getproxyconn.ForwardTo(host, *ForwardTo.Config.Nodes[ForwardTo.Config.Setting.Proxy])
-			log.Println(runtime.NumGoroutine(), "Mode: Only Proxy| Domain:", host, "| Proxy:", ForwardTo.Config.Setting.Proxy)
-		} else {
-			proxy, _ = net.Dial("tcp", host)
-			log.Println(runtime.NumGoroutine(), host, "Mode: Direct| Domain:", host)
-		}
-	}
-	return
-}
-
 func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
-	var target string
 	var URI *url.URL
 	var proxy string
+	var mode string
 	URI, err := url.Parse("//" + host)
 	if err != nil {
 		return nil, err
 	}
-	isBypass, server := ForwardTo.IsBypass(host)
-	if isBypass {
-		if ForwardTo.Matcher != nil {
-			target, proxy = ForwardTo.Matcher.MatchStr(host)
+	switch ForwardTo.Config.Setting.Bypass {
+	case true:
+		mode = "Bypass"
+		switch ForwardTo.Matcher {
+		default:
+			hostTmp, proxy := ForwardTo.Matcher.MatchStr(URI.Hostname())
+			host = hostTmp + URI.Port()
 			URI = ForwardTo.Config.Nodes[proxy]
 			if URI == nil {
 				URI, err = url.Parse("direct://0.0.0.0:0")
@@ -60,20 +48,26 @@ func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
 					return nil, err
 				}
 			}
-		} else {
-			target = host
-			proxy = "direct"
+		case nil:
+			proxy = "Direct"
 			URI, err = url.Parse("direct://0.0.0.0:0")
 			if err != nil {
 				return nil, err
 			}
 		}
-
-		server, err = getproxyconn.ForwardTo(net.JoinHostPort(target, URI.Port()), *URI)
-		if err != nil {
-			return nil, err
+	case false:
+		switch ForwardTo.Config.Setting.Direct {
+		case false:
+			mode, proxy = "Only Proxy", ForwardTo.Config.Setting.Proxy
+			URI = ForwardTo.Config.Nodes[ForwardTo.Config.Setting.Proxy]
+		case true:
+			mode, proxy = "Direct", "Direct"
+			URI, err = url.Parse("direct://0.0.0.0:0")
+			if err != nil {
+				return nil, err
+			}
 		}
-		log.Println(runtime.NumGoroutine(), "Mode: Bypass| Domain:", host, "| match to", proxy)
 	}
-	return server, nil
+	log.Println(runtime.NumGoroutine(), "Mode:", mode, "| Domain:", host, "| match to ", proxy)
+	return getproxyconn.ForwardTo(host, *URI)
 }

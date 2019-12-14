@@ -131,53 +131,37 @@ func (socks5Server *ServerSocks5) handleClientRequest(client net.Conn) error {
 			return err
 		}
 
+		var server net.Conn
 		switch b[1] {
 		case 0x01:
-			var server net.Conn
 			if socks5Server.ForwardTo != nil {
-				server, err = socks5Server.ForwardTo(net.JoinHostPort(host, port))
-				if err != nil {
+				if server, err = socks5Server.ForwardTo(net.JoinHostPort(host, port)); err != nil {
 					return err
 				}
 			} else {
-				server, err = net.Dial("tcp", net.JoinHostPort(host, port))
-				if err != nil {
+				if server, err = net.Dial("tcp", net.JoinHostPort(host, port)); err != nil {
 					return err
 				}
 			}
-			defer func() {
-				_ = server.Close()
-			}()
-			forward(client, server)
 
 		case 0x02:
 			log.Println("bind request " + net.JoinHostPort(host, port))
+			if server, err = net.Dial("tcp", net.JoinHostPort(host, port)); err != nil {
+				return err
+			}
 
 		case 0x03:
 			log.Println("udp request " + net.JoinHostPort(host, port))
-			socks5Server.udp(client, net.JoinHostPort(host, port))
+			if server, err = net.Dial("udp", net.JoinHostPort(host, port)); err != nil {
+				return err
+			}
 		}
+		defer func() {
+			_ = server.Close()
+		}()
+		forward(client, server)
 	}
 	return nil
-}
-
-func (socks5Server *ServerSocks5) connect() {
-	// do something
-}
-
-func (socks5Server *ServerSocks5) udp(client net.Conn, domain string) {
-	server, err := net.Dial("udp", domain)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer func() {
-		_ = server.Close()
-	}()
-	_, _ = client.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}) //respond to connect successful
-
-	// forward
-	forward(server, client)
 }
 
 func forward(src, dst net.Conn) {

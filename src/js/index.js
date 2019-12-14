@@ -84,11 +84,8 @@ function ruleTableInit(){
 
 
 function settingInit() {
-    let moreSetting = $("#moreSetting");
-    let bypassSetting = $("#bypassSetting");
-    let directSetting = $("#directSetting");
     let proxySetting = $("#proxyOnlySetting");
-
+    let proxyModeSetting = $("#proxyModeSetting");
     fs.readFile('./config/config.json',function (err,data) {
         if(err){
             console.log(err)
@@ -99,14 +96,16 @@ function settingInit() {
         $("#dnsSetting").val(setting["dns"]);
         $("#socks5Setting").val(setting["socks_5"]);
         $("#httpSetting").val(setting["http"]);
-        bypassSetting.prop("checked",setting["bypass"]);
-        directSetting.prop("checked",setting["direct"]);
-        if (!bypassSetting.prop("checked")){
-            moreSetting.css("display","block")
+        if (setting["bypass"]){
+            proxyModeSetting.val("BYPASS")
         }else{
-            moreSetting.css("display","none")
+            if (setting["direct"]){
+                proxyModeSetting.val("DIRECT")
+            }else{
+                proxyModeSetting.val("PROXY")
+            }
         }
-        if (directSetting.prop("checked")){
+        if (proxyModeSetting.val() !== "PROXY"){
             proxySetting.attr("disabled","disabled")
         }else{
             proxySetting.removeAttr("disabled")
@@ -121,18 +120,9 @@ function settingInit() {
             proxySetting.val(setting["proxy"]);
         }
     });
-    bypassSetting.change(
+    proxyModeSetting.change(
         function () {
-            if ($(this).prop("checked")){
-                moreSetting.css("display","none")
-            }else {
-                moreSetting.css("display","block")
-            }
-        }
-    );
-    directSetting.change(
-        function () {
-            if ($(this).prop("checked")){
+            if ($(this).val() !== "PROXY"){
                 proxySetting.attr("disabled","disabled")
             }else {
                 proxySetting.removeAttr("disabled")

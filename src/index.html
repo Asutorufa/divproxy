@@ -178,24 +178,25 @@
                     <label for="httpSetting"></label>
                     <input type="text" class="form-control" id="httpSetting" placeholder="127.0.0.1:1080"/>
                 </div>
-                <div class="custom-control custom-checkbox mb-3">
-                            <input type="checkbox" class="custom-control-input" id="bypassSetting" name="example1">
-                            <label class="custom-control-label" for="bypassSetting">BYPASS</label>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">PROXY MODE</span>
+                    </div>
+                    <label for="proxyModeSetting"></label>
+                    <select id="proxyModeSetting" class="custom-select" data-style="btn-primary">
+                        <option>BYPASS</option>
+                        <option>DIRECT</option>
+                        <option>PROXY</option>
+                    </select>
                 </div>
-                <div id="moreSetting" style="display: none">
-                    <div class="custom-control custom-checkbox mb-3 custom-control-inline">
-                        <input type="checkbox" class="custom-control-input" id="directSetting">
-                        <label class="custom-control-label" for="directSetting">DIRECT</label>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">PROXY</span>
                     </div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">PROXY</span>
-                        </div>
-                        <label for="proxyOnlySetting"></label>
-                        <select id="proxyOnlySetting" class="custom-select" data-style="btn-primary" >
+                    <label for="proxyOnlySetting"></label>
+                    <select id="proxyOnlySetting" class="custom-select" data-style="btn-primary" >
 
-                        </select>
-                    </div>
+                    </select>
                 </div>
             </form>
         </div>
