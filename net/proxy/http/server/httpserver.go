@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // HTTPServer like name
@@ -44,19 +45,22 @@ func (HTTPServer *HTTPServer) Close() error {
 }
 
 func (HTTPServer *HTTPServer) httpProxyAcceptARequest() error {
-	HTTPConn, err := HTTPServer.HTTPListener.AcceptTCP()
+	client, err := HTTPServer.HTTPListener.AcceptTCP()
 	if err != nil {
+		return err
+	}
+	if err = client.SetKeepAlivePeriod(5 * time.Second); err != nil {
 		return err
 	}
 
 	go func() {
-		if HTTPConn == nil {
+		if client == nil {
 			return
 		}
 		defer func() {
-			_ = HTTPConn.Close()
+			_ = client.Close()
 		}()
-		if err := HTTPServer.httpHandleClientRequest(HTTPConn); err != nil {
+		if err := HTTPServer.httpHandleClientRequest(client); err != nil {
 			log.Println(err)
 			return
 		}
@@ -89,9 +93,9 @@ func (HTTPServer *HTTPServer) HTTPProxy() error {
 	}
 }
 
-func (HTTPServer *HTTPServer) httpHandleClientRequest(HTTPConn net.Conn) error {
+func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	requestData := make([]byte, 1024*4)
-	requestDataSize, err := HTTPConn.Read(requestData[:])
+	requestDataSize, err := client.Read(requestData[:])
 	if err != nil {
 		return err
 	}
@@ -148,37 +152,39 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(HTTPConn net.Conn) error {
 	}
 	headerRequest += "\r\n\r\n" + data
 
-	var Conn net.Conn
+	var server net.Conn
 	if HTTPServer.ForwardTo != nil {
-		Conn, err = HTTPServer.ForwardTo(hostPortURL.Host)
+		server, err = HTTPServer.ForwardTo(hostPortURL.Host)
 		if err != nil {
 			return err
 		}
 	} else {
-		Conn, err = net.Dial("tcp", hostPortURL.Host)
+		server, err = net.Dial("tcp", hostPortURL.Host)
 		if err != nil {
 			return err
 		}
 	}
 	defer func() {
-		_ = Conn.Close()
+		_ = server.Close()
 	}()
 
 	switch {
 	case requestMethod == "CONNECT":
-		if _, err = HTTPConn.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {
+		if _, err = client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {
 			return err
 		}
 	default:
-		if _, err := Conn.Write([]byte(headerRequest)); err != nil {
+		if _, err := server.Write([]byte(headerRequest)); err != nil {
 			return err
 		}
 	}
 
 	CloseSig := make(chan error, 0)
-	go pipe(Conn, HTTPConn, CloseSig)
-	go pipe(HTTPConn, Conn, CloseSig)
+	go pipe(server, client, CloseSig)
+	go pipe(client, server, CloseSig)
 	<-CloseSig
+	<-CloseSig
+	close(CloseSig)
 	return nil
 }
 

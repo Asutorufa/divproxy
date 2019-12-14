@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"time"
 )
 
 // ServerSocks5 <--
@@ -37,6 +38,9 @@ func (socks5Server *ServerSocks5) socks5Init() error {
 func (socks5Server *ServerSocks5) socks5AcceptARequest() error {
 	client, err := socks5Server.conn.AcceptTCP()
 	if err != nil {
+		return err
+	}
+	if err = client.SetKeepAlivePeriod(5 * time.Second); err != nil {
 		return err
 	}
 
@@ -165,13 +169,12 @@ func (socks5Server *ServerSocks5) handleClientRequest(client net.Conn) error {
 }
 
 func forward(src, dst net.Conn) {
-	CloseSig, CloseSig2 := make(chan error, 0), make(chan error, 0)
+	CloseSig := make(chan error, 0)
 	go pipe(src, dst, CloseSig)
-	go pipe(dst, src, CloseSig2)
+	go pipe(dst, src, CloseSig)
+	<-CloseSig
 	<-CloseSig
 	close(CloseSig)
-	<-CloseSig2
-	close(CloseSig2)
 }
 
 func pipe(src, dst net.Conn, closeSig chan error) {
