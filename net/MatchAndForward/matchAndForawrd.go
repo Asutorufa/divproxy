@@ -2,7 +2,6 @@ package MatchAndForward
 
 import (
 	"divproxy/config"
-	"divproxy/init"
 	"divproxy/net/forward"
 	"divproxy/net/matcher"
 	"log"
@@ -16,13 +15,13 @@ type ForwardTo struct {
 	Config  *config.ConfigJSON
 }
 
-func NewForwardTo() (forwardTo *ForwardTo, err error) {
+func NewForwardTo(configJsonPath, rulePath string) (forwardTo *ForwardTo, err error) {
 	forwardTo = &ForwardTo{}
-	forwardTo.Config, err = divproxyinit.GetConfig()
+	forwardTo.Config, err = config.DecodeJSON(configJsonPath)
 	if err != nil {
 		return
 	}
-	forwardTo.Matcher, err = matcher.NewMatcherWithFile(forwardTo.Config.Setting.DNS, divproxyinit.GetRuleFilePath())
+	forwardTo.Matcher, err = matcher.NewMatcherWithFile(forwardTo.Config.Setting.DNS, rulePath)
 	return
 }
 

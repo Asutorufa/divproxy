@@ -1,6 +1,7 @@
 package cidrmatch
 
 import (
+	"net"
 	"testing"
 )
 
@@ -44,5 +45,41 @@ func BenchmarkCidrMatch_MatchOneIP(b *testing.B) {
 		//cidrMatch.MatchOneIP(testIPv6)
 		//cidrMatch.MatchOneIP(testIPv4b)
 		cidrMatch.MatchOneIP(testIPv6b)
+	}
+}
+
+func BenchmarkIpv6AddrToInt2(b *testing.B) {
+	b.StopTimer()
+	S := "ffff:fff2:ffff:ffff:ffff:ffff:ffff:ffff"
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		Ipv6AddrToInt2(S)
+	}
+}
+
+func BenchmarkIpv6AddrToInt(b *testing.B) {
+	b.StopTimer()
+	S := "ffff:fff2:ffff:ffff:ffff:ffff:ffff:ffff"
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		Ipv6AddrToInt(S)
+	}
+}
+
+func BenchmarkToIpv6(b *testing.B) {
+	b.StopTimer()
+	S := "::ffff:fff2:ffff:ffff:ffff"
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		b.Log(ToIpv6(S))
+	}
+}
+
+func BenchmarkToIpv62(b *testing.B) {
+	b.StopTimer()
+	S := "::ffff:fff2:ffff:ffff:ffff"
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		b.Log(net.ParseIP(S).To16())
 	}
 }

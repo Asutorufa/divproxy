@@ -8,14 +8,16 @@ import (
 )
 
 type ServerControl struct {
-	Socks5  *socks5server.ServerSocks5
-	HttpS   *httpserver.HTTPServer
-	forward *MatchAndForward.ForwardTo
+	Socks5         *socks5server.ServerSocks5
+	HttpS          *httpserver.HTTPServer
+	forward        *MatchAndForward.ForwardTo
+	ConfigJsonPath string
+	RulePath       string
 }
 
 func (ServerControl *ServerControl) serverControlInit() {
 	var err error
-	ServerControl.forward, err = MatchAndForward.NewForwardTo()
+	ServerControl.forward, err = MatchAndForward.NewForwardTo(ServerControl.ConfigJsonPath, ServerControl.RulePath)
 	if err != nil {
 		log.Println(err)
 	}

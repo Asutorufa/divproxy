@@ -249,3 +249,27 @@ func Ipv6AddrToInt(ipAddr string) string {
 
 	return sum1S + sum2S + sum3S + sum4S
 }
+
+func Ipv6AddrToInt2(ipAddr string) string {
+	//var all []int64
+	all := ""
+	//f := func(s int64){
+	//	//arr := [...]int64{0x01,0x02,0x04,0x08, 0x10,0x20,0x40,0x80, 0x100,0x200,0x400,0x800, 0x1000,0x2000,0x4000,0x8000}
+	//	arr := [16]int64{0x8000,0x4000,0x2000,0x1000, 0x0800,0x0400,0x0200,0x0100, 0x0080,0x0040,0x0020,0x0010, 0x0008,0x0004,0x0002,0x0001}
+	//	for _,x := range arr{
+	//		if s&x == x{
+	//			//all = append(all,1)
+	//		}else{
+	//			//all = append(all,0)
+	//		}
+	//	}
+	//}
+
+	for _, x := range strings.Split(ipAddr, ":") {
+		ss, _ := strconv.ParseInt(x, 16, 64)
+		all += strconv.FormatInt(ss, 2)
+	}
+	//fmt.Println(all)
+	//log.Println(ss&0,ss&1,ss&2,ss&3,ss&4,ss&5,ss&6,ss&7,ss&8)
+	return all
+}
