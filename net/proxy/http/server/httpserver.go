@@ -99,23 +99,24 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	if err != nil {
 		return err
 	}
-
+	if requestDataSize <= 3 {
+		return nil
+	}
 	headerAndData := strings.Split(string(requestData[:requestDataSize]), "\r\n\r\n")
-	var header, data string
+	var header, data strings.Builder
 	if len(headerAndData) > 0 {
-		header = headerAndData[0]
+		header.WriteString(headerAndData[0])
 		if len(headerAndData) > 1 {
-			data = headerAndData[1]
+			data.WriteString(headerAndData[1])
 		}
 	} else {
 		return errors.New("no header")
 	}
 
-	headerTmp := strings.Split(header, "\r\n")
-	headerRequest := headerTmp[0]
-	var requestMethod string
-	headerRequestSplit := strings.Split(headerRequest, " ")
-	requestMethod = headerRequestSplit[0]
+	/*
+		parse request header
+	*/
+	headerTmp := strings.Split(header.String(), "\r\n")
 	headerArgs := make(map[string]string)
 	for index, line := range headerTmp {
 		if index != 0 {
@@ -131,10 +132,14 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 		}
 	}
 
+	headerRequestSplit := strings.Split(headerTmp[0], " ")
+	requestMethod := headerRequestSplit[0]
 	if requestMethod == "CONNECT" {
 		headerArgs["Host"] = headerRequestSplit[1]
 	}
-
+	/*
+		parse request host and port
+	*/
 	hostPortURL, err := url.Parse("//" + headerArgs["Host"])
 	if err != nil {
 		return err
@@ -142,16 +147,18 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	if hostPortURL.Port() == "" {
 		hostPortURL.Host = hostPortURL.Host + ":80"
 	}
-	headerRequest = strings.ReplaceAll(headerRequest, "http://"+hostPortURL.Host, "")
+
 	//microlog.Debug(headerArgs)
 	//microlog.Debug("requestMethod:",requestMethod)
 	//microlog.Debug("headerRequest ",headerRequest,"headerRequest end")
 
+	var headerRequest strings.Builder
+	headerRequest.WriteString(strings.ReplaceAll(headerTmp[0], "http://"+hostPortURL.Host, ""))
 	for key, value := range headerArgs {
-		headerRequest += "\r\n" + key + ": " + value
+		headerRequest.WriteString("\r\n" + key + ": " + value)
 	}
-	headerRequest += "\r\n\r\n" + data
-
+	headerRequest.WriteString("\r\n\r\n" + data.String())
+	//log.Println(headerRequest.String())
 	var server net.Conn
 	if HTTPServer.ForwardTo != nil {
 		server, err = HTTPServer.ForwardTo(hostPortURL.Host)
@@ -174,7 +181,7 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 			return err
 		}
 	default:
-		if _, err := server.Write([]byte(headerRequest)); err != nil {
+		if _, err := server.Write([]byte(headerRequest.String())); err != nil {
 			return err
 		}
 	}

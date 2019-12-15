@@ -94,22 +94,18 @@ func (cidrMatch *CidrMatch) MatchOneIP(ip string) (isMatch bool, mark string) {
 
 // IpAddrToInt convert ipv4 to binary
 func IpAddrToInt(ipAddr string) string {
+	var str strings.Builder
 	bits := strings.Split(ipAddr, ".")
 	b0, _ := strconv.Atoi(bits[0])
 	b1, _ := strconv.Atoi(bits[1])
 	b2, _ := strconv.Atoi(bits[2])
 	b3, _ := strconv.Atoi(bits[3])
-	var sum int64
-	sum += int64(b0) << 24
-	sum += int64(b1) << 16
-	sum += int64(b2) << 8
-	sum += int64(b3)
-	c := strconv.FormatInt(sum, 2)
-	nowLong := 32 - len(c)
-	for i := 0; i < nowLong; i++ {
-		c = "0" + c
+	c := strconv.FormatInt(int64(b0)<<24+int64(b1)<<16+int64(b2)<<8+int64(b3), 2)
+	for i := 0; i < 32-len(c); i++ {
+		str.WriteByte('0')
 	}
-	return c
+	str.WriteString(c)
+	return str.String()
 }
 
 // ToIpv6 convert ipv6 to completely ip
@@ -265,10 +261,36 @@ func Ipv6AddrToInt2(ipAddr string) string {
 	//	}
 	//}
 
-	for _, x := range strings.Split(ipAddr, ":") {
-		ss, _ := strconv.ParseInt(x, 16, 64)
-		all += strconv.FormatInt(ss, 2)
+	xxx := map[byte]string{
+		'0': "0000",
+		'1': "0001",
+		'2': "0010",
+		'3': "0011",
+		'4': "0100",
+		'5': "0101",
+		'6': "0110",
+		'7': "0111",
+		'8': "1000",
+		'9': "1001",
+		'a': "1010",
+		'b': "1011",
+		'c': "1100",
+		'd': "1101",
+		'e': "1110",
+		'f': "1111",
 	}
+	for n := 0; n < len(ipAddr); n++ {
+		if ipAddr[n] == ':' {
+			continue
+		} else {
+			_ = xxx[ipAddr[n]]
+		}
+	}
+	//xx := strings.Split(ipAddr, ":")
+	//for n, _ := range xx {
+	//	ss, _ := strconv.ParseInt(xx[n], 16, 64)
+	//	all += strconv.FormatInt(ss, 2)
+	//}
 	//fmt.Println(all)
 	//log.Println(ss&0,ss&1,ss&2,ss&3,ss&4,ss&5,ss&6,ss&7,ss&8)
 	return all

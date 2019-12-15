@@ -83,3 +83,11 @@ func BenchmarkToIpv62(b *testing.B) {
 		b.Log(net.ParseIP(S).To16())
 	}
 }
+
+func BenchmarkIpAddrToInt(b *testing.B) {
+	str := "0.0.255.255"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.Log(IpAddrToInt(str))
+	}
+}
