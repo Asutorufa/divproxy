@@ -94,6 +94,13 @@ func (HTTPServer *HTTPServer) HTTPProxy() error {
 }
 
 func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
+	/*
+		use golang http
+	*/
+	//ss, _ := http.ReadRequest(bufio.NewReader(client))
+	//log.Println(ss.Header)
+	//log.Println(ss.Method)
+
 	requestData := make([]byte, 1024*4)
 	requestDataSize, err := client.Read(requestData[:])
 	if err != nil {
@@ -144,16 +151,14 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	if err != nil {
 		return err
 	}
+	var headerRequest strings.Builder
+	headerRequest.WriteString(strings.ReplaceAll(headerTmp[0], "http://"+hostPortURL.Host, ""))
 	if hostPortURL.Port() == "" {
 		hostPortURL.Host = hostPortURL.Host + ":80"
 	}
-
 	//microlog.Debug(headerArgs)
 	//microlog.Debug("requestMethod:",requestMethod)
 	//microlog.Debug("headerRequest ",headerRequest,"headerRequest end")
-
-	var headerRequest strings.Builder
-	headerRequest.WriteString(strings.ReplaceAll(headerTmp[0], "http://"+hostPortURL.Host, ""))
 	for key, value := range headerArgs {
 		headerRequest.WriteString("\r\n" + key + ": " + value)
 	}
