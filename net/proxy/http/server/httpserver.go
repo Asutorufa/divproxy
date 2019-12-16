@@ -1,10 +1,12 @@
 package httpserver
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"log"
 	"net"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -93,13 +95,35 @@ func (HTTPServer *HTTPServer) HTTPProxy() error {
 	}
 }
 
+func (HTTPServer *HTTPServer) httpHandleClientRequest2(client net.Conn) error {
+	/*
+		use golang http
+	*/
+	ss, _ := http.ReadRequest(bufio.NewReader(client))
+	log.Println("header", ss.Header)
+	log.Println("method", ss.Method)
+	if ss.Method == http.MethodConnect {
+		if _, err := client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {
+			return err
+		}
+	}
+	log.Println("form", ss.Form)
+	return nil
+}
+
 func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	/*
 		use golang http
 	*/
 	//ss, _ := http.ReadRequest(bufio.NewReader(client))
-	//log.Println(ss.Header)
-	//log.Println(ss.Method)
+	//log.Println("header",ss.Header)
+	//log.Println("method",ss.Method)
+	//if ss.Method == http.MethodConnect{
+	//	if _, err := client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil{
+	//		return err
+	//	}
+	//}
+	//log.Println("form",ss.Form)
 
 	requestData := make([]byte, 1024*4)
 	requestDataSize, err := client.Read(requestData[:])
