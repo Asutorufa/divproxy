@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // HTTPServer like name
@@ -51,9 +50,9 @@ func (HTTPServer *HTTPServer) httpProxyAcceptARequest() error {
 	if err != nil {
 		return err
 	}
-	if err = client.SetKeepAlivePeriod(5 * time.Second); err != nil {
-		return err
-	}
+	//if err = client.SetKeepAlivePeriod(5 * time.Second); err != nil {
+	//	return err
+	//}
 
 	go func() {
 		if client == nil {
@@ -63,7 +62,9 @@ func (HTTPServer *HTTPServer) httpProxyAcceptARequest() error {
 			_ = client.Close()
 		}()
 		if err := HTTPServer.httpHandleClientRequest(client); err != nil {
-			log.Println(err)
+			if err.Error() != "unexpected EOF" && err.Error() != "EOF" {
+				log.Println(err)
+			}
 			return
 		}
 	}()
@@ -99,12 +100,13 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	/*
 		use golang http
 	*/
-	req, _ := http.ReadRequest(bufio.NewReader(client))
-	if req == nil {
-		return errors.New("GET REQUEST ERROR")
+	inBoundReader := bufio.NewReader(client)
+	req, err := http.ReadRequest(inBoundReader)
+	if err != nil {
+		return err
 	}
+	host := req.Host
 	var server net.Conn
-	var err error
 	if HTTPServer.ForwardTo != nil {
 		server, err = HTTPServer.ForwardTo(req.Host)
 		if err != nil {
@@ -123,51 +125,60 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 		if _, err := client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {
 			return err
 		}
+		CloseSig := make(chan error, 0)
+		go pipe(client, server, CloseSig)
+		go pipe(server, client, CloseSig)
+		<-CloseSig
+		<-CloseSig
+		close(CloseSig)
 	} else {
-		req.URL.Host = ""
-		req.URL.Scheme = ""
-		req.Header.Set("Connection", "close")
-		//if connection := req.Header.Get("Proxy-Connection");connection != ""{
-		//	req.Header.Set("Connection","close")
-		//	req.Header.Set("Keep-Alive", "timeout=4")
-		//}
-		req.Header.Del("Proxy-Connection")
-		req.Header.Del("Proxy-Authenticate")
-		req.Header.Del("Proxy-Authorization")
-		req.Header.Del("TE")
-		req.Header.Del("Trailers")
-		req.Header.Del("Transfer-Encoding")
-		req.Header.Del("Upgrade")
-		if err := req.Write(server); err != nil {
-			log.Println(err)
-			return err
-		}
+		outboundReader := bufio.NewReader(server)
+		for {
+			req.URL.Host = ""
+			req.URL.Scheme = ""
+			//req.Header.Set("Connection", "close")
+			if connection := req.Header.Get("Proxy-Connection"); connection != "" {
+				req.Header.Set("Connection", req.Header.Get("Proxy-Connection"))
+				//req.Header.Set("Keep-Alive", "timeout=4")
+			}
+			req.Header.Del("Proxy-Connection")
+			req.Header.Del("Proxy-Authenticate")
+			req.Header.Del("Proxy-Authorization")
+			//req.Header.Del("TE")
+			//req.Header.Del("Trailers")
+			//req.Header.Del("Transfer-Encoding")
+			//req.Header.Del("Upgrade")
+			if err := req.Write(server); err != nil {
+				return err
+			}
 
-		//outboundReeder := bufio.NewReader(server)
-		//resp, err := http.ReadResponse(outboundReeder, req)
-		//if err != nil {
-		//	log.Println(err)
-		//	return err
-		//}
-		//resp.Header.Del("Proxy-Connection")
-		//resp.Header.Del("Proxy-Authenticate")
-		//resp.Header.Del("Proxy-Authorization")
-		//resp.Header.Del("TE")
-		//resp.Header.Del("Trailers")
-		//resp.Header.Del("Transfer-Encoding")
-		//resp.Header.Del("Upgrade")
-		//err = resp.Write(client)
-		//if err != nil {
-		//	log.Println(err)
-		//	return err
-		//}
+			resp, err := http.ReadResponse(outboundReader, req)
+			if err != nil {
+				return err
+			}
+			resp.Header.Del("Proxy-Connection")
+			resp.Header.Del("Proxy-Authenticate")
+			resp.Header.Del("Proxy-Authorization")
+			//resp.Header.Del("TE")
+			//resp.Header.Del("Trailers")
+			//resp.Header.Del("Transfer-Encoding")
+			//resp.Header.Del("Upgrade")
+			err = resp.Write(client)
+			if err != nil {
+				return err
+			}
+			if req.Header.Get("Connection") != "Keep-Alive" && req.Header.Get("Connection") != "keep-alive" {
+				break
+			}
+			req, err = http.ReadRequest(inBoundReader)
+			if err != nil {
+				return err
+			}
+			if req.Host != host {
+				break
+			}
+		}
 	}
-	CloseSig := make(chan error, 0)
-	go pipe(client, server, CloseSig)
-	go pipe(server, client, CloseSig)
-	<-CloseSig
-	<-CloseSig
-	close(CloseSig)
 	return nil
 }
 
