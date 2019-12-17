@@ -95,23 +95,83 @@ func (HTTPServer *HTTPServer) HTTPProxy() error {
 	}
 }
 
-func (HTTPServer *HTTPServer) httpHandleClientRequest2(client net.Conn) error {
+func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	/*
 		use golang http
 	*/
-	ss, _ := http.ReadRequest(bufio.NewReader(client))
-	log.Println("header", ss.Header)
-	log.Println("method", ss.Method)
-	if ss.Method == http.MethodConnect {
-		if _, err := client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {
+	req, _ := http.ReadRequest(bufio.NewReader(client))
+	if req == nil {
+		return errors.New("GET REQUEST ERROR")
+	}
+	var server net.Conn
+	var err error
+	if HTTPServer.ForwardTo != nil {
+		server, err = HTTPServer.ForwardTo(req.Host)
+		if err != nil {
+			return err
+		}
+	} else {
+		server, err = net.Dial("tcp", req.Host)
+		if err != nil {
 			return err
 		}
 	}
-	log.Println("form", ss.Form)
+	defer func() {
+		_ = server.Close()
+	}()
+	if req.Method == http.MethodConnect {
+		if _, err := client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {
+			return err
+		}
+	} else {
+		req.URL.Host = ""
+		req.URL.Scheme = ""
+		req.Header.Set("Connection", "close")
+		//if connection := req.Header.Get("Proxy-Connection");connection != ""{
+		//	req.Header.Set("Connection","close")
+		//	req.Header.Set("Keep-Alive", "timeout=4")
+		//}
+		req.Header.Del("Proxy-Connection")
+		req.Header.Del("Proxy-Authenticate")
+		req.Header.Del("Proxy-Authorization")
+		req.Header.Del("TE")
+		req.Header.Del("Trailers")
+		req.Header.Del("Transfer-Encoding")
+		req.Header.Del("Upgrade")
+		if err := req.Write(server); err != nil {
+			log.Println(err)
+			return err
+		}
+
+		//outboundReeder := bufio.NewReader(server)
+		//resp, err := http.ReadResponse(outboundReeder, req)
+		//if err != nil {
+		//	log.Println(err)
+		//	return err
+		//}
+		//resp.Header.Del("Proxy-Connection")
+		//resp.Header.Del("Proxy-Authenticate")
+		//resp.Header.Del("Proxy-Authorization")
+		//resp.Header.Del("TE")
+		//resp.Header.Del("Trailers")
+		//resp.Header.Del("Transfer-Encoding")
+		//resp.Header.Del("Upgrade")
+		//err = resp.Write(client)
+		//if err != nil {
+		//	log.Println(err)
+		//	return err
+		//}
+	}
+	CloseSig := make(chan error, 0)
+	go pipe(client, server, CloseSig)
+	go pipe(server, client, CloseSig)
+	<-CloseSig
+	<-CloseSig
+	close(CloseSig)
 	return nil
 }
 
-func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
+func (HTTPServer *HTTPServer) httpHandleClientRequest2(client net.Conn) error {
 	/*
 		use golang http
 	*/

@@ -33,6 +33,13 @@ func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
+	if URI.Port() == "" {
+		host = host + ":80"
+		if URI, err = url.Parse("//" + host); err != nil {
+			return nil, err
+		}
+	}
+
 	switch ForwardTo.Config.Setting.Bypass {
 	case true:
 		mode = "Bypass"
