@@ -108,13 +108,11 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	host := req.Host
 	var server net.Conn
 	if HTTPServer.ForwardTo != nil {
-		server, err = HTTPServer.ForwardTo(req.Host)
-		if err != nil {
+		if server, err = HTTPServer.ForwardTo(req.Host); err != nil {
 			return err
 		}
 	} else {
-		server, err = net.Dial("tcp", req.Host)
-		if err != nil {
+		if server, err = net.Dial("tcp", req.Host); err != nil {
 			return err
 		}
 	}
@@ -125,12 +123,7 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 		if _, err := client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n")); err != nil {
 			return err
 		}
-		CloseSig := make(chan error, 0)
-		go pipe(client, server, CloseSig)
-		go pipe(server, client, CloseSig)
-		<-CloseSig
-		<-CloseSig
-		close(CloseSig)
+		forward(server, client)
 	} else {
 		outboundReader := bufio.NewReader(server)
 		for {
@@ -166,6 +159,9 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 			err = resp.Write(client)
 			if err != nil {
 				return err
+			}
+			if resp.Header.Get("Connection") == "close" {
+				break
 			}
 			if req.Header.Get("Connection") != "Keep-Alive" && req.Header.Get("Connection") != "keep-alive" {
 				break
@@ -286,15 +282,18 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest2(client net.Conn) error {
 		}
 	}
 
+	forward(server, client)
+	return nil
+}
+
+func forward(server, client net.Conn) {
 	CloseSig := make(chan error, 0)
 	go pipe(server, client, CloseSig)
 	go pipe(client, server, CloseSig)
 	<-CloseSig
 	<-CloseSig
 	close(CloseSig)
-	return nil
 }
-
 func pipe(src, dst net.Conn, closeSig chan error) {
 	buf := make([]byte, 0x400*32)
 	for {

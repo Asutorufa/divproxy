@@ -4,11 +4,11 @@
             "Scheme": "socks5",
             "Opaque": "",
             "User": null,
-            "Host": "127.0.0.1:1080",
+            "Host": "127.0.0.1:7891",
             "Path": "",
             "RawPath": "",
             "ForceQuery": false,
-            "RawQuery": "user=xxx\u0026password=xxx",
+            "RawQuery": "",
             "Fragment": ""
         },
         "url2": {
@@ -29,6 +29,6 @@
         "http": "127.0.0.1:8081",
         "bypass": false,
         "direct": false,
-        "proxy": "url2"
+        "proxy": "url1"
     }
 }
