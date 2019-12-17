@@ -161,6 +161,7 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 				return err
 			}
 			if resp.Header.Get("Connection") == "close" {
+				resp.Close = true
 				break
 			}
 			if req.Header.Get("Connection") != "Keep-Alive" && req.Header.Get("Connection") != "keep-alive" {
