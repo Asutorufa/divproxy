@@ -10,7 +10,6 @@ import (
 	"log"
 	"net"
 	"net/url"
-	"time"
 )
 
 type ForwardTo struct {
@@ -74,7 +73,7 @@ func (ForwardTo *ForwardTo) Forward(host string) (conn net.Conn, err error) {
 				host = net.JoinHostPort(hosts[x], URI.Port())
 				conn, err = getproxyconn.ForwardTo(host, *proxyURI)
 				if err == nil {
-					ForwardTo.log("Mode: " + mode + " | Domain: " + host + " | match to " + proxy + "  | " + time.Now().Format("2006-01-02 15:04:05"))
+					ForwardTo.log("Mode: " + mode + " | Domain: " + host + " | match to " + proxy)
 					return conn, nil
 				}
 			}
@@ -99,7 +98,7 @@ func (ForwardTo *ForwardTo) Forward(host string) (conn net.Conn, err error) {
 			}
 		}
 	}
-	ForwardTo.log("Mode: " + mode + " | Domain: " + host + " | match to " + proxy + "  " + time.Now().Format("2006-01-02 15:04:05"))
+	ForwardTo.log("Mode: " + mode + " | Domain: " + host + " | match to " + proxy)
 	conn, err = getproxyconn.ForwardTo(host, *proxyURI)
 	return
 }

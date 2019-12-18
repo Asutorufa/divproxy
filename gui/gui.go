@@ -127,14 +127,15 @@ func (gui *GUI) addListenerToWindows() {
 					return err
 				}
 				fmt.Println(name, url)
-				return "add success!"
+				return "add " + name + " " + url.Host + " success!"
 			} else {
 				return "error"
 			}
 		case deleteProxyRe.MatchString(s):
 			s := deleteProxyRe.FindAllStringSubmatch(s, -1)
-			fmt.Println(s)
-			return "delete success!"
+			name := s[0][1]
+			fmt.Println(name)
+			return "delete " + name + " success!"
 		case getRuleRe.MatchString(s):
 			configTemp, err := ioutil.ReadFile("./rule/rule.config")
 			if err != nil {

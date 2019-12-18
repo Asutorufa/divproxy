@@ -37,7 +37,7 @@
             <button type="button" class="btn btn-secondary" id="restartProxy">restart</button>
             <button type="button" class="btn btn-secondary" id="stopProxy">stop</button>
         </div>
-        <div id="log" style="display: none">
+        <div id="log" style="display: none;position:absolute;height: 85%;width: 90%;overflow:auto;background: #f3f6f9;color: #73808f;padding: 10px;font-size: 16px">
             <pre id="logCode">log</pre>
         </div>
         <div id="proxy" style="display: none">
@@ -75,7 +75,12 @@
                                     <span class="input-group-text">NAME</span>
                                 </div>
                                 <label for="addProxyName"></label>
-                                <input type="text" class="form-control"  data-toggle="popover" title="" data-placement="top" data-content="" id="addProxyName" placeholder="Name.."/>
+                                <input type="text" class="form-control"
+                                       data-toggle="popover" data-trigger="focus"
+                                       data-placement="top"
+                                       data-animation="true"
+                                       data-content="Name Can Not Empty"
+                                       id="addProxyName" placeholder="Name.."/>
                             </div>
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
@@ -92,7 +97,13 @@
                                     <span class="input-group-text">HOST</span>
                                 </div>
                                 <label for="addProxyHost"></label>
-                                <input type="text" class="form-control" data-toggle="popover" title=""  data-placement="bottom" data-content=""  id="addProxyHost" placeholder="127.0.0.1:1080.."/>
+                                <input type="text" class="form-control"
+                                       data-toggle="popover" data-trigger="focus"
+                                       data-placement="top"
+                                       data-animation="true"
+                                       data-html="true"
+                                       data-content="Format Like This:<br/><code>127.0.0.1:8080?username=xx&password=xxx</code>"
+                                       id="addProxyHost" placeholder="127.0.0.1:1080.."/>
                             </div>
                         </div>
 

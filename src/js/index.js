@@ -10,42 +10,7 @@ document.addEventListener('astilectron-ready', function() {
 
 });
 
-$("#addProxyButton").click(
-    function () {
-        let name = $("#addProxyName").val();
-        let scheme = $("#addProxyScheme").val().toLowerCase();
-        let Host = $("#addProxyHost").val();
-        if (name === "") {
-            // alert("name is empty!");
-            $("#addProxyName").attr("title","miss something!").attr("data-content","name is empty!").popover('show');
-            return
-        }else{
-            $("#addProxyName").popover('dispose');
-        }
-        if (!/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$/.test(Host)){
-            // alert("Host format error!");
-            $("#addProxyHost").attr("title","something is not correct!").attr("data-content","Host format error!").popover('show');
-            return
-        }else {
-            $("#addProxyHost").popover('dispose')
-        }
-        console.log(name+scheme+Host);
-        $('#myModalProxy').modal('hide');
-        astilectron.sendMessage("addProxy://"+name+"-"+scheme+"://"+Host,function (message) {
-            console.log("received: "+message);
-            alert(message)
-        });
-    }
-);
 
-$("#deleteProxy").click(
-    function () {
-        astilectron.sendMessage("deleteProxy://name",function (message) {
-          console.log("received: "+message);
-          alert(message)
-        })
-    }
-);
 
 function View(view) {
     if (view === "proxy") {
@@ -151,10 +116,6 @@ function getAlert(str) {
 </div>`
 }
 
-const deleteProxy = id => {
-    $("#proxyWar").html(getAlert("删除"+id+"成功!"));
-    proxyTableInit();
-};
 
 const deleteRule = id => {
     $("#ruleWar").html(getAlert("删除"+id+"成功!"));
@@ -184,6 +145,11 @@ function proxyTableInit(){
     })
 }
 
+$("document").ready(
+    function () {
+        $('[data-toggle="popover"]').popover()
+    }
+);
 // const path = require("path");
 // console.log(path.resolve("./src/connectBanckend.js"));
 // const {startProxy} = require(path.resolve("./src/js/connectBanckend.js"));
