@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -62,10 +63,9 @@ func (HTTPServer *HTTPServer) httpProxyAcceptARequest() error {
 			_ = client.Close()
 		}()
 		if err := HTTPServer.httpHandleClientRequest(client); err != nil {
-			if err.Error() != "unexpected EOF" && err.Error() != "EOF" {
+			if err != io.EOF && err != io.ErrUnexpectedEOF && err != io.ErrClosedPipe {
 				log.Println(err)
 			}
-			return
 		}
 	}()
 	return nil
@@ -107,14 +107,20 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	}
 	host := req.Host
 	var server net.Conn
-	if HTTPServer.ForwardTo != nil {
-		if server, err = HTTPServer.ForwardTo(req.Host); err != nil {
-			return err
+	getOutBound := func() {
+		if HTTPServer.ForwardTo != nil {
+			if server, err = HTTPServer.ForwardTo(req.Host); err != nil {
+				log.Println(err)
+			}
+		} else {
+			if server, err = net.Dial("tcp", req.Host); err != nil {
+				log.Println(err)
+			}
 		}
-	} else {
-		if server, err = net.Dial("tcp", req.Host); err != nil {
-			return err
-		}
+	}
+	getOutBound()
+	if server == nil {
+		return nil
 	}
 	defer func() {
 		_ = server.Close()
@@ -125,8 +131,8 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 		}
 		forward(server, client)
 	} else {
-		outboundReader := bufio.NewReader(server)
 		for {
+			outboundReader := bufio.NewReader(server)
 			req.URL.Host = ""
 			req.URL.Scheme = ""
 			//req.Header.Set("Connection", "close")

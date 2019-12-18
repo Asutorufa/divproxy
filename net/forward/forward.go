@@ -4,6 +4,7 @@ import (
 	"divproxy/net/proxy/socks5/client"
 	"net"
 	"net/url"
+	"time"
 )
 
 func ForwardTo(host string, proxy url.URL) (net.Conn, error) {
@@ -25,7 +26,7 @@ func toSocks5(host string, s5Server, s5Port string) (socks5Conn net.Conn, err er
 }
 
 func toTCP(host string) (net.Conn, error) {
-	return net.Dial("tcp", host)
+	return net.DialTimeout("tcp", host, 10*time.Second)
 }
 
 func toHTTP(host string, httpProxyServer string) (server net.Conn, err error) {

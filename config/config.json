@@ -27,7 +27,7 @@
         "dns": "8.8.8.8:53",
         "socks_5": "127.0.0.1:1081",
         "http": "127.0.0.1:8081",
-        "bypass": false,
+        "bypass": true,
         "direct": false,
         "proxy": "url1"
     }

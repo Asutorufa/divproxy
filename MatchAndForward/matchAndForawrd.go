@@ -4,6 +4,7 @@ import (
 	"divproxy/config"
 	"divproxy/net/forward"
 	"divproxy/net/matcher"
+	"errors"
 	"log"
 	"net"
 	"net/url"
@@ -25,16 +26,16 @@ func NewForwardTo(configJsonPath, rulePath string) (forwardTo *ForwardTo, err er
 	return
 }
 
-func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
+func (ForwardTo *ForwardTo) Forward(host string) (conn net.Conn, err error) {
 	var URI *url.URL
+	var proxyURI *url.URL
 	var proxy string
 	var mode string
-	URI, err := url.Parse("//" + host)
-	if err != nil {
+	if URI, err = url.Parse("//" + host); err != nil {
 		return nil, err
 	}
 	if URI.Port() == "" {
-		host = host + ":80"
+		host = net.JoinHostPort(host, "80")
 		if URI, err = url.Parse("//" + host); err != nil {
 			return nil, err
 		}
@@ -45,15 +46,26 @@ func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
 		mode = "Bypass"
 		switch ForwardTo.Matcher {
 		default:
-			hostTmp, proxy := ForwardTo.Matcher.MatchStr(URI.Hostname())
-			host = hostTmp + URI.Port()
-			URI = ForwardTo.Config.Nodes[proxy]
-			if URI == nil {
-				URI, err = url.Parse("direct://0.0.0.0:0")
+			hosts, proxy := ForwardTo.Matcher.MatchStr(URI.Hostname())
+			if proxy == "block" {
+				return nil, errors.New("block domain: " + host)
+			}
+			proxyURI = ForwardTo.Config.Nodes[proxy]
+			if proxyURI == nil {
+				proxyURI, err = url.Parse("direct://0.0.0.0:0")
 				if err != nil {
 					return nil, err
 				}
 			}
+			for x := range hosts {
+				host = net.JoinHostPort(hosts[x], URI.Port())
+				conn, err = getproxyconn.ForwardTo(host, *proxyURI)
+				if err == nil {
+					log.Println(runtime.NumGoroutine(), "Mode:", mode, "| Domain:", host, "| match to", proxy)
+					return conn, nil
+				}
+			}
+			return nil, errors.New("make connection:" + net.JoinHostPort(hosts[len(hosts)-1], URI.Port()) + " with proxy:" + proxy + " error")
 		case nil:
 			proxy = "Direct"
 			URI, err = url.Parse("direct://0.0.0.0:0")
@@ -65,15 +77,18 @@ func (ForwardTo *ForwardTo) Forward(host string) (net.Conn, error) {
 		switch ForwardTo.Config.Setting.Direct {
 		case false:
 			mode, proxy = "Only Proxy", ForwardTo.Config.Setting.Proxy
-			URI = ForwardTo.Config.Nodes[ForwardTo.Config.Setting.Proxy]
+			proxyURI = ForwardTo.Config.Nodes[ForwardTo.Config.Setting.Proxy]
 		case true:
 			mode, proxy = "Direct", "Direct"
-			URI, err = url.Parse("direct://0.0.0.0:0")
+			proxyURI, err = url.Parse("direct://0.0.0.0:0")
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-	log.Println(runtime.NumGoroutine(), "Mode:", mode, "| Domain:", host, "| match to ", proxy)
-	return getproxyconn.ForwardTo(host, *URI)
+	log.Println(runtime.NumGoroutine(), "Mode:", mode, "| Domain:", host, "| match to", proxy)
+	conn, err = getproxyconn.ForwardTo(host, *proxyURI)
+	if err != nil {
+	}
+	return
 }

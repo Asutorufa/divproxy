@@ -64,21 +64,22 @@ func NewMatcherWithFile(DNSServer string, MatcherFile string) (matcher *Match, e
 	return matcher, nil
 }
 
-func (newMatch *Match) MatchStr(str string) (target string, proxy string) {
+func (newMatch *Match) MatchStr(str string) (target []string, proxy string) {
 	isMatch := false
-	target = str
+	target = []string{}
 	if net.ParseIP(str) != nil {
 		isMatch, proxy = newMatch.cidrMatch.MatchOneIP(str)
-		log.Println(isMatch, proxy)
+		//log.Println(isMatch, proxy)
 	} else {
 		isMatch, proxy = newMatch.domainMatch.Search(str)
 		if !isMatch {
 			if dnsS, isSuccess := dns.DNS(newMatch.DNSServer, str); isSuccess {
 				isMatch, proxy = newMatch.cidrMatch.MatchOneIP(dnsS[0])
-				target = dnsS[0]
+				target = append(target, dnsS...)
 			}
 		}
 	}
+	target = append(target, str)
 	if isMatch {
 		return
 	}
