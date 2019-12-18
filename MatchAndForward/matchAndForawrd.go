@@ -5,15 +5,18 @@ import (
 	"divproxy/net/forward"
 	"divproxy/net/matcher"
 	"errors"
+	"fmt"
+	"github.com/asticode/go-astilectron"
 	"log"
 	"net"
 	"net/url"
-	"runtime"
+	"time"
 )
 
 type ForwardTo struct {
 	Matcher *matcher.Match
 	Config  *config.ConfigJSON
+	GUI     *astilectron.Window
 }
 
 func NewForwardTo(configJsonPath, rulePath string) (forwardTo *ForwardTo, err error) {
@@ -24,6 +27,16 @@ func NewForwardTo(configJsonPath, rulePath string) (forwardTo *ForwardTo, err er
 	}
 	forwardTo.Matcher, err = matcher.NewMatcherWithFile(forwardTo.Config.Setting.DNS, rulePath)
 	return
+}
+
+func (ForwardTo *ForwardTo) log(str string) {
+	if ForwardTo.GUI != nil {
+		if err := ForwardTo.GUI.SendMessage(str); err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		log.Println(str)
+	}
 }
 
 func (ForwardTo *ForwardTo) Forward(host string) (conn net.Conn, err error) {
@@ -61,7 +74,7 @@ func (ForwardTo *ForwardTo) Forward(host string) (conn net.Conn, err error) {
 				host = net.JoinHostPort(hosts[x], URI.Port())
 				conn, err = getproxyconn.ForwardTo(host, *proxyURI)
 				if err == nil {
-					log.Println(runtime.NumGoroutine(), "Mode:", mode, "| Domain:", host, "| match to", proxy)
+					ForwardTo.log("Mode: " + mode + " | Domain: " + host + " | match to " + proxy + "  | " + time.Now().Format("2006-01-02 15:04:05"))
 					return conn, nil
 				}
 			}
@@ -86,9 +99,7 @@ func (ForwardTo *ForwardTo) Forward(host string) (conn net.Conn, err error) {
 			}
 		}
 	}
-	log.Println(runtime.NumGoroutine(), "Mode:", mode, "| Domain:", host, "| match to", proxy)
+	ForwardTo.log("Mode: " + mode + " | Domain: " + host + " | match to " + proxy + "  " + time.Now().Format("2006-01-02 15:04:05"))
 	conn, err = getproxyconn.ForwardTo(host, *proxyURI)
-	if err != nil {
-	}
 	return
 }

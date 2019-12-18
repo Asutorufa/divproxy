@@ -8,18 +8,30 @@ document.addEventListener('astilectron-ready', function() {
     //     console.log("received " + message)
     // });
 
-    // This will listen to messages sent by GO
-    astilectron.onMessage(function(message) {
-        // Process message
-        if (message === "hello") {
-            return "received"
-        }
-    });
 });
 
-$("#addProxy").click(
+$("#addProxyButton").click(
     function () {
-        astilectron.sendMessage("addProxy://name-socks5://127.0.0.1:1080\naddProxy://name-http://127.0.0.1:8080",function (message) {
+        let name = $("#addProxyName").val();
+        let scheme = $("#addProxyScheme").val().toLowerCase();
+        let Host = $("#addProxyHost").val();
+        if (name === "") {
+            // alert("name is empty!");
+            $("#addProxyName").attr("title","miss something!").attr("data-content","name is empty!").popover('show');
+            return
+        }else{
+            $("#addProxyName").popover('dispose');
+        }
+        if (!/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$/.test(Host)){
+            // alert("Host format error!");
+            $("#addProxyHost").attr("title","something is not correct!").attr("data-content","Host format error!").popover('show');
+            return
+        }else {
+            $("#addProxyHost").popover('dispose')
+        }
+        console.log(name+scheme+Host);
+        $('#myModalProxy').modal('hide');
+        astilectron.sendMessage("addProxy://"+name+"-"+scheme+"://"+Host,function (message) {
             console.log("received: "+message);
             alert(message)
         });
@@ -138,6 +150,7 @@ function getAlert(str) {
   <strong>${str}</strong>
 </div>`
 }
+
 const deleteProxy = id => {
     $("#proxyWar").html(getAlert("删除"+id+"成功!"));
     proxyTableInit();
@@ -170,3 +183,7 @@ function proxyTableInit(){
         }
     })
 }
+
+// const path = require("path");
+// console.log(path.resolve("./src/connectBanckend.js"));
+// const {startProxy} = require(path.resolve("./src/js/connectBanckend.js"));
