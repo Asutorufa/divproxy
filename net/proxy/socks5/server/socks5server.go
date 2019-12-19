@@ -3,6 +3,7 @@ package socks5server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -19,6 +20,27 @@ type ServerSocks5 struct {
 	context   context.Context
 	cancel    context.CancelFunc
 	conn      *net.TCPListener
+}
+
+func NewSocks5Server(server, port, username, password string, forwardTo func(host string) (net.Conn, error)) (*ServerSocks5, error) {
+	socks5Server := &ServerSocks5{
+		Server:    server,
+		Port:      port,
+		Username:  username,
+		Password:  password,
+		ForwardTo: forwardTo,
+	}
+	socks5Server.context, socks5Server.cancel = context.WithCancel(context.Background())
+	socks5ServerIP := net.ParseIP(socks5Server.Server)
+	socks5ServerPort, err := strconv.Atoi(socks5Server.Port)
+	if err != nil {
+		return socks5Server, err
+	}
+	socks5Server.conn, err = net.ListenTCP("tcp", &net.TCPAddr{IP: socks5ServerIP, Port: socks5ServerPort})
+	if err != nil {
+		return socks5Server, err
+	}
+	return socks5Server, nil
 }
 
 func (socks5Server *ServerSocks5) socks5Init() error {
@@ -60,15 +82,20 @@ func (socks5Server *ServerSocks5) socks5AcceptARequest() error {
 }
 
 func (socks5Server *ServerSocks5) Close() error {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 	socks5Server.cancel()
 	return socks5Server.conn.Close()
 }
 
 // Socks5 <--
 func (socks5Server *ServerSocks5) Socks5() error {
-	if err := socks5Server.socks5Init(); err != nil {
-		return err
-	}
+	//if err := socks5Server.socks5Init(); err != nil {
+	//	return err
+	//}
 	for {
 		select {
 		case <-socks5Server.context.Done():

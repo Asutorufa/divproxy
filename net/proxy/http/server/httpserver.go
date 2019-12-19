@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -21,6 +22,27 @@ type HTTPServer struct {
 	ForwardTo    func(host string) (net.Conn, error)
 	context      context.Context
 	cancel       context.CancelFunc
+}
+
+func NewHTTPServer(server, port, username, password string, forwardTo func(host string) (net.Conn, error)) (*HTTPServer, error) {
+	HTTPServer := &HTTPServer{
+		HTTPServer: server,
+		HTTPPort:   port,
+		ForwardTo:  forwardTo,
+	}
+	var err error
+	HTTPServer.context, HTTPServer.cancel = context.WithCancel(context.Background())
+	socks5ToHTTPServerIP := net.ParseIP(HTTPServer.HTTPServer)
+	socks5ToHTTPServerPort, err := strconv.Atoi(HTTPServer.HTTPPort)
+	if err != nil {
+		return HTTPServer, err
+	}
+	HTTPServer.HTTPListener, err = net.ListenTCP("tcp",
+		&net.TCPAddr{IP: socks5ToHTTPServerIP, Port: socks5ToHTTPServerPort})
+	if err != nil {
+		return HTTPServer, err
+	}
+	return HTTPServer, nil
 }
 
 func (HTTPServer *HTTPServer) httpProxyInit() error {
@@ -42,6 +64,11 @@ func (HTTPServer *HTTPServer) httpProxyInit() error {
 }
 
 func (HTTPServer *HTTPServer) Close() error {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 	HTTPServer.cancel()
 	return HTTPServer.HTTPListener.Close()
 }
@@ -75,9 +102,9 @@ func (HTTPServer *HTTPServer) httpProxyAcceptARequest() error {
 // server http listen server,port http listen port
 // sock5Server socks5 server ip,socks5Port socks5 server port
 func (HTTPServer *HTTPServer) HTTPProxy() error {
-	if err := HTTPServer.httpProxyInit(); err != nil {
-		return err
-	}
+	//if err := HTTPServer.httpProxyInit(); err != nil {
+	//	return err
+	//}
 	for {
 		select {
 		case <-HTTPServer.context.Done():

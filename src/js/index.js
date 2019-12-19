@@ -145,6 +145,10 @@ $("document").ready(
         $('[data-toggle="popover"]').popover()
     }
 );
-// const path = require("path");
-// console.log(path.resolve("./src/connectBanckend.js"));
-// const {startProxy} = require(path.resolve("./src/js/connectBanckend.js"));
+
+$("#refreshSettingButton").click(
+    function () {
+        settingInit();
+        $("#settingWar").html(getAlert("refresh setting!"));
+    }
+);

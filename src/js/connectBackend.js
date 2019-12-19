@@ -90,6 +90,26 @@ document.addEventListener('astilectron-ready', function() {
             });
         });
 
+
+    $("#applySettingButton").click(
+        function () {
+            console.log("apply setting!");
+            let DNS = $("#dnsSetting").val();
+            let socks5 = $("#socks5Setting").val();
+            let http = $("#httpSetting").val();
+            let proxyMode = $("#proxyModeSetting").val();
+            let onlyProxy = $("#proxyOnlySetting").val();
+            // console.log(DNS,socks5,http,proxyMode,onlyProxy);
+            astilectron.sendMessage("applySetting://DNS-"+DNS+":socks5-"+socks5+":http-"+http+":proxyMode-"+proxyMode+":onlyProxy-"+onlyProxy,function (message) {
+                console.log("received: "+message);
+                $("#settingWar").html(getAlert(message));
+                proxyTableInit();
+                restartProxy()
+            });
+        }
+    );
+
+
 });
 
 const deleteProxy = id => {
@@ -107,3 +127,5 @@ const deleteRule = id => {
         ruleTableInit();
     });
 };
+
+

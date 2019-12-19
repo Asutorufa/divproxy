@@ -113,6 +113,10 @@ func (gui *GUI) addListenerToWindows() {
 		if err != nil {
 			return err
 		}
+		applySettingRe, err := regexp.Compile("applySetting://DNS-(.*):socks5-(.*):http-(.*):proxyMode-(.*):onlyProxy-(.*)")
+		if err != nil {
+			return err
+		}
 
 		switch {
 		case s == "startProxy://":
@@ -155,6 +159,40 @@ func (gui *GUI) addListenerToWindows() {
 			rule := s[0][1]
 			fmt.Println(rule)
 			return "delete rule: " + rule + " success!"
+		case applySettingRe.MatchString(s):
+			s := applySettingRe.FindAllStringSubmatch(s, -1)
+			DNS := s[0][1]
+			socks5 := s[0][2]
+			http := s[0][3]
+			proxyMode := s[0][4]
+			onlyProxy := s[0][5]
+			var bypass bool
+			var direct bool
+			switch proxyMode {
+			case "BYPASS":
+				bypass = true
+			case "DIRECT":
+				bypass = false
+				direct = true
+			case "PROXY":
+				bypass = false
+				direct = false
+			}
+			fmt.Println(DNS, socks5, http, proxyMode, onlyProxy, bypass, direct)
+			configs, err := divproxyinit.GetConfig()
+			if err != nil {
+				return err
+			}
+			configs.Setting.DNS = DNS
+			configs.Setting.Socks5 = socks5
+			configs.Setting.HTTP = http
+			configs.Setting.Bypass = bypass
+			configs.Setting.Direct = direct
+			configs.Setting.Proxy = onlyProxy
+			if err = divproxyinit.EncodeSetting(configs); err != nil {
+				return err
+			}
+			return "apply setting!"
 		}
 		return nil
 	})

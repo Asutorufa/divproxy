@@ -30,3 +30,10 @@ func AddOneProxy(str string, url *url.URL) error {
 	}
 	return nil
 }
+
+func EncodeSetting(json *config2.ConfigJSON) error {
+	if err := config2.EnCodeJSON(GetConfigPath(), json); err != nil {
+		return err
+	}
+	return nil
+}
