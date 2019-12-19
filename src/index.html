@@ -152,7 +152,13 @@
                                     <span class="input-group-text">CIDR/DOMAIN</span>
                                 </div>
                                 <label for="addRuleRule"></label>
-                                <input type="text" class="form-control" id="addRuleRule" placeholder="10.2.2.1/18.."/>
+                                <input type="text" class="form-control" id="addRuleRule" 
+                                       data-toggle="popover" data-trigger="focus"
+                                       data-placement="top"
+                                       data-animation="true"
+                                       data-html="true"
+                                       data-content="DOMAIN Format: <code>google.com</code><br/>CIDR Format:<code>10.2.2.1/18</code>"
+                                       placeholder="10.2.2.1/18.."/>
                             </div>
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
@@ -167,7 +173,7 @@
 
                         <!-- 模态框底部 -->
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">添加</button>
+                            <button type="button" class="btn btn-primary" id="addRuleButton">添加</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
                         </div>
 

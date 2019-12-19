@@ -5,8 +5,6 @@ import (
 	"divproxy/net/forward"
 	"divproxy/net/matcher"
 	"errors"
-	"fmt"
-	"github.com/asticode/go-astilectron"
 	"log"
 	"net"
 	"net/url"
@@ -15,7 +13,7 @@ import (
 type ForwardTo struct {
 	Matcher *matcher.Match
 	Config  *config.ConfigJSON
-	GUI     *astilectron.Window
+	Log     func(v ...interface{})
 }
 
 func NewForwardTo(configJsonPath, rulePath string) (forwardTo *ForwardTo, err error) {
@@ -28,13 +26,11 @@ func NewForwardTo(configJsonPath, rulePath string) (forwardTo *ForwardTo, err er
 	return
 }
 
-func (ForwardTo *ForwardTo) log(str string) {
-	if ForwardTo.GUI != nil {
-		if err := ForwardTo.GUI.SendMessage(str); err != nil {
-			fmt.Println(err)
-		}
+func (ForwardTo *ForwardTo) log(v ...interface{}) {
+	if ForwardTo.Log != nil {
+		ForwardTo.Log(v)
 	} else {
-		log.Println(str)
+		log.Println(v)
 	}
 }
 

@@ -3,10 +3,7 @@ document.addEventListener('astilectron-ready', function() {
     astilectron.onMessage(function(message) {
         // Process message
         // console.log(message);
-        if (message.startsWith("Mode: ")){
-            const date = new Date();
-            $("#logCode").prepend(date+"    "+message+"\n")
-        }
+        $("#logCode").prepend(new Date()+"    "+message+"\n")
     });
 
     function startProxy() {
@@ -47,8 +44,6 @@ document.addEventListener('astilectron-ready', function() {
         }
     );
 
-
-
     $("#addProxyButton").click(
         function () {
             let addProxyName = $("#addProxyName");
@@ -57,16 +52,12 @@ document.addEventListener('astilectron-ready', function() {
             let scheme = $("#addProxyScheme").val().toLowerCase();
             let Host = addProxyHost.val();
             if (name === "") {
-                // alert("name is empty!");
-                $("#addProxyName").popover('hide').popover('show');
+                addProxyName.popover('hide').popover('show');
                 return
             }
             if (!/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$/.test(Host)){
-                // alert("Host format error!");
-                $("#addProxyHost").popover('hide').popover('show');
+                addProxyHost.popover('hide').popover('show');
                 return
-            }else {
-                $("#addProxyHost").popover('dispose')
             }
             console.log(name+scheme+Host);
             $('#myModalProxy').modal('hide');
@@ -78,6 +69,27 @@ document.addEventListener('astilectron-ready', function() {
         }
     );
 
+    $("#addRuleButton").click(
+        function(){
+            let addRuleRule = $("#addRuleRule");
+            if (addRuleRule.val()===""){
+                addRuleRule.popover('hide').popover('show');
+                return
+            }
+            let rule = addRuleRule.val();
+            let proxy = $("#addRuleProxy").val();
+            if (!/(^(?=^.{3,255}$)[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$|^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$)/.test(rule)){
+                addRuleRule.popover('hide').popover('show');
+                return;
+            }
+            astilectron.sendMessage("addRule://"+rule+"-"+proxy, function (message) {
+                console.log("received: " + message);
+                $("#ruleWar").html(getAlert(message))
+                ruleTableInit();
+                $("#myModalRule").modal('hide')
+            });
+        });
+
 });
 
 const deleteProxy = id => {
@@ -85,5 +97,13 @@ const deleteProxy = id => {
         console.log("received: "+message);
         $("#proxyWar").html(getAlert(message));
         proxyTableInit();
+    });
+};
+
+
+const deleteRule = id => {
+    astilectron.sendMessage("deleteRule://"+id,function (message) {
+        $("#ruleWar").html(getAlert(message));
+        ruleTableInit();
     });
 };

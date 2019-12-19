@@ -117,11 +117,6 @@ function getAlert(str) {
 }
 
 
-const deleteRule = id => {
-    $("#ruleWar").html(getAlert("删除"+id+"成功!"));
-    ruleTableInit();
-};
-
 function proxyTableInit(){
     $("#proxyTable").empty();
     fs.readFile('./config/config.json',function (err,data) {

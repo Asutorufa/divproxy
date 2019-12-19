@@ -9,7 +9,6 @@ import (
 	"github.com/asticode/go-astilog"
 	astiptr "github.com/asticode/go-astitools/ptr"
 	"github.com/pkg/errors"
-	"io/ioutil"
 	url2 "net/url"
 	"regexp"
 )
@@ -62,7 +61,12 @@ func (gui *GUI) createWindow() {
 	if err = gui.Window.Create(); err != nil {
 		astilog.Fatal(errors.Wrap(err, "main: creating window failed"))
 	}
-	gui.server.GUI = gui.Window
+	log := func(v ...interface{}) {
+		if err := gui.Window.SendMessage(v); err != nil {
+			fmt.Println(err)
+		}
+	}
+	gui.server.Log = log
 }
 
 func (gui *GUI) addExtrasOptionToWindow() {
@@ -101,7 +105,11 @@ func (gui *GUI) addListenerToWindows() {
 		if err != nil {
 			return err
 		}
-		getRuleRe, err := regexp.Compile("getRule://")
+		addRuleRe, err := regexp.Compile("addRule://(.*)-(.*)")
+		if err != nil {
+			return err
+		}
+		deleteRuleRe, err := regexp.Compile("deleteRule://(.*)")
 		if err != nil {
 			return err
 		}
@@ -136,12 +144,17 @@ func (gui *GUI) addListenerToWindows() {
 			name := s[0][1]
 			fmt.Println(name)
 			return "delete " + name + " success!"
-		case getRuleRe.MatchString(s):
-			configTemp, err := ioutil.ReadFile("./rule/rule.config")
-			if err != nil {
-				return err
-			}
-			return string(configTemp)
+		case addRuleRe.MatchString(s):
+			s := addRuleRe.FindAllStringSubmatch(s, -1)
+			rule := s[0][1]
+			proxy := s[0][2]
+			fmt.Println(rule, proxy)
+			return "add rule: " + rule + "-" + proxy + " success!"
+		case deleteRuleRe.MatchString(s):
+			s := deleteRuleRe.FindAllStringSubmatch(s, -1)
+			rule := s[0][1]
+			fmt.Println(rule)
+			return "delete rule: " + rule + " success!"
 		}
 		return nil
 	})

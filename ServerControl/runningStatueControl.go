@@ -4,7 +4,6 @@ import (
 	"divproxy/MatchAndForward"
 	"divproxy/net/proxy/http/server"
 	"divproxy/net/proxy/socks5/server"
-	"github.com/asticode/go-astilectron"
 	"log"
 )
 
@@ -12,7 +11,7 @@ type ServerControl struct {
 	Socks5         *socks5server.ServerSocks5
 	HttpS          *httpserver.HTTPServer
 	forward        *MatchAndForward.ForwardTo
-	GUI            *astilectron.Window
+	Log            func(v ...interface{})
 	ConfigJsonPath string
 	RulePath       string
 }
@@ -23,7 +22,7 @@ func (ServerControl *ServerControl) serverControlInit() {
 	if err != nil {
 		log.Println(err)
 	}
-	ServerControl.forward.GUI = ServerControl.GUI
+	ServerControl.forward.Log = ServerControl.Log
 }
 
 func (ServerControl *ServerControl) ServerStart() {
