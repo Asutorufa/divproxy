@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/asticode/go-astilectron"
+	_ "github.com/asticode/go-astilectron-bootstrap"
 	"github.com/asticode/go-astilog"
 	astiptr "github.com/asticode/go-astitools/ptr"
 	"github.com/pkg/errors"
@@ -49,7 +50,7 @@ func (gui *GUI) guiInit() {
 func (gui *GUI) createWindow() {
 	// New window
 	var err error
-	if gui.Window, err = gui.Accelerator.NewWindow("src/index.html", &astilectron.WindowOptions{
+	if gui.Window, err = gui.Accelerator.NewWindow("resources/app/index.html", &astilectron.WindowOptions{
 		Center: astiptr.Bool(true),
 		Height: astiptr.Int(600),
 		Width:  astiptr.Int(1110),
