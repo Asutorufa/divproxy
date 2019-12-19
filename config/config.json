@@ -21,12 +21,23 @@
             "ForceQuery": false,
             "RawQuery": "",
             "Fragment": ""
+        },
+        "zest": {
+            "Scheme": "http",
+            "Opaque": "",
+            "User": null,
+            "Host": "1.1.1.1:1111",
+            "Path": "",
+            "RawPath": "",
+            "ForceQuery": false,
+            "RawQuery": "",
+            "Fragment": ""
         }
     },
     "setting": {
         "dns": "114.114.114.114:53",
-        "socks_5": "127.0.0.1:1081",
-        "http": "127.0.0.1:8081",
+        "socks_5": "127.0.0.1:1080",
+        "http": "127.0.0.1:8080",
         "bypass": false,
         "direct": false,
         "proxy": "url1"

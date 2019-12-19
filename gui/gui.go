@@ -139,6 +139,9 @@ func (gui *GUI) addListenerToWindows() {
 					return err
 				}
 				fmt.Println(name, url)
+				if err := divproxyinit.AddOneProxy(name, url); err != nil {
+					return err
+				}
 				return "add " + name + " " + url.Host + " success!"
 			} else {
 				return "error"
@@ -147,17 +150,26 @@ func (gui *GUI) addListenerToWindows() {
 			s := deleteProxyRe.FindAllStringSubmatch(s, -1)
 			name := s[0][1]
 			fmt.Println(name)
+			if err := divproxyinit.DeleteOneProxy(name); err != nil {
+				return err
+			}
 			return "delete " + name + " success!"
 		case addRuleRe.MatchString(s):
 			s := addRuleRe.FindAllStringSubmatch(s, -1)
 			rule := s[0][1]
 			proxy := s[0][2]
 			fmt.Println(rule, proxy)
+			if err = divproxyinit.AddOneRule(rule+" "+proxy, divproxyinit.GetRuleFilePath()); err != nil {
+				return err
+			}
 			return "add rule: " + rule + "-" + proxy + " success!"
 		case deleteRuleRe.MatchString(s):
 			s := deleteRuleRe.FindAllStringSubmatch(s, -1)
 			rule := s[0][1]
 			fmt.Println(rule)
+			if err = divproxyinit.DeleteOneRule(rule, divproxyinit.GetRuleFilePath()); err != nil {
+				return err
+			}
 			return "delete rule: " + rule + " success!"
 		case applySettingRe.MatchString(s):
 			s := applySettingRe.FindAllStringSubmatch(s, -1)
@@ -196,12 +208,6 @@ func (gui *GUI) addListenerToWindows() {
 		}
 		return nil
 	})
-}
-
-func (gui *GUI) Log(str string) {
-	if err := gui.Window.SendMessage("hello"); err != nil {
-		fmt.Println(err)
-	}
 }
 
 func (gui *GUI) CreateGUI() {

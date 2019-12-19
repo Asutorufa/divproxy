@@ -2,17 +2,20 @@ package ServerControl
 
 import (
 	"divproxy/MatchAndForward"
+	config2 "divproxy/config"
 	"divproxy/net/proxy/http/server"
 	"divproxy/net/proxy/socks5/server"
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 )
 
 type ServerControl struct {
 	Socks5         *socks5server.ServerSocks5
 	HttpS          *httpserver.HTTPServer
 	forward        *MatchAndForward.ForwardTo
+	config         *config2.ConfigJSON
 	Log            func(v ...interface{})
 	ConfigJsonPath string
 	RulePath       string
@@ -25,16 +28,27 @@ func (ServerControl *ServerControl) serverControlInit() {
 		log.Println(err)
 	}
 	ServerControl.forward.Log = ServerControl.Log
+	if ServerControl.config, err = config2.DecodeJSON(ServerControl.ConfigJsonPath); err != nil {
+		log.Println(err)
+	}
 }
 
 func (ServerControl *ServerControl) ServerStart() {
 	ServerControl.serverControlInit()
 	var err error
-	ServerControl.Socks5, err = socks5server.NewSocks5Server("127.0.0.1", "1080", "", "", ServerControl.forward.Forward)
+	socks5, err := url.Parse("//" + ServerControl.config.Setting.Socks5)
 	if err != nil {
 		log.Println(err)
 	}
-	ServerControl.HttpS, err = httpserver.NewHTTPServer("127.0.0.1", "8080", "", "", ServerControl.forward.Forward)
+	ServerControl.Socks5, err = socks5server.NewSocks5Server(socks5.Hostname(), socks5.Port(), "", "", ServerControl.forward.Forward)
+	if err != nil {
+		log.Println(err)
+	}
+	http, err := url.Parse("//" + ServerControl.config.Setting.HTTP)
+	if err != nil {
+		log.Println(err)
+	}
+	ServerControl.HttpS, err = httpserver.NewHTTPServer(http.Hostname(), http.Port(), "", "", ServerControl.forward.Forward)
 	if err != nil {
 		fmt.Println(err)
 	}

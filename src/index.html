@@ -38,7 +38,9 @@
             <button type="button" class="btn btn-secondary" id="stopProxy">stop</button>
         </div>
         <div id="log" style="display: none;position:absolute;height: 85%;width: 90%;overflow:auto;background: #f3f6f9;color: #73808f;padding: 10px;font-size: 16px">
-            <pre id="logCode">log</pre>
+            <pre id="logCode">
+
+            </pre>
         </div>
         <div id="proxy" style="display: none">
             <div id="proxyWar">
@@ -57,7 +59,7 @@
 
                 </tbody>
             </table>
-            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModalProxy">addProxy</button>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#myModalProxy">addProxy</button>
             <div class="modal fade" id="myModalProxy">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -116,6 +118,59 @@
                     </div>
                 </div>
             </div>
+            <div class="modal fade" id="myModalEditProxy">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+
+                        <!-- 模态框头部 -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">EDIT PROXY</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <!-- 模态框主体 -->
+                        <div class="modal-body">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">NAME</span>
+                                </div>
+                                <label for="editProxyName"></label>
+                                <input type="text" class="form-control" disabled id="editProxyName" value="test"/>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">SCHEME</span>
+                                </div>
+                                <label for="editProxyScheme"></label>
+                                <select id="editProxyScheme" class="custom-select" data-style="btn-primary" >
+                                    <option>SOCKS5</option>
+                                    <option>HTTP</option>
+                                </select>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">HOST</span>
+                                </div>
+                                <label for="editProxyHost"></label>
+                                <input type="text" class="form-control"
+                                       data-toggle="popover" data-trigger="focus"
+                                       data-placement="top"
+                                       data-animation="true"
+                                       data-html="true"
+                                       data-content="Format Like This:<br/><code>127.0.0.1:8080?username=xx&password=xxx</code>"
+                                       id="editProxyHost" placeholder="127.0.0.1:1080.."/>
+                            </div>
+                        </div>
+
+                        <!-- 模态框底部 -->
+                        <div class="modal-footer">
+                            <button type="button" id="editProxyButton" class="btn btn-primary">确认修改</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
         </div>
         <div id="rule" style="display: none">
             <div id="ruleWar">
@@ -134,7 +189,7 @@
                 </tbody>
             </table>
 
-            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModalRule">ADD RULE</button>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#myModalRule">ADD RULE</button>
             <div class="modal fade" id="myModalRule">
                 <div class="modal-dialog">
                     <div class="modal-content">

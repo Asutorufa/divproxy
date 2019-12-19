@@ -56,6 +56,7 @@ function ruleTableInit(){
                 addRuleProxy.append(`<option>${key}</option>`)
             }
         }
+        addRuleProxy.append(`<option>block</option>`)
     })
 }
 
@@ -131,9 +132,12 @@ function proxyTableInit(){
                 $("#proxyTable").append(`
                         <tr>
                             <td>${key}</td>
-                            <td>${node["Scheme"]}</td>
+                            <td>${node["Scheme"].toUpperCase()}</td>
                             <td>${node["Host"]}</td>
-                            <td><button type="button" class="btn btn-light" onclick="deleteProxy('${key}')">DELETE</button></td>
+                            <td>
+                                <button type="button" class="btn btn-light" onclick="deleteProxy('${key}')">DELETE</button>
+                                <button type="button" class="btn btn-light" onclick="editProxyModalShow('${key}','${node["Scheme"].toUpperCase()}','${node["Host"]}')">EDIT</button>
+                            </td>
                         </tr>`)
             }
         }
@@ -152,3 +156,10 @@ $("#refreshSettingButton").click(
         $("#settingWar").html(getAlert("refresh setting!"));
     }
 );
+
+function editProxyModalShow(name,scheme,host) {
+    $("#editProxyName").val(name);
+    $("#editProxyScheme").val(scheme.toUpperCase());
+    $("#editProxyHost").val(host);
+    $("#myModalEditProxy").modal('show')
+}
