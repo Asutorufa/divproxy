@@ -28,7 +28,7 @@ function View(view) {
 
 function ruleTableInit(){
     const rl = readline.createInterface({
-        input: fs.createReadStream('./rule/rule.config')
+        input: fs.createReadStream('./resources/app/config/rule.config')
     });
     $("#ruleTable").empty();
     rl.on('line', (line) => {
@@ -43,7 +43,7 @@ function ruleTableInit(){
     });
 
 
-    fs.readFile('./config/config.json',function (err,data) {
+    fs.readFile('./resources/app/config/rule.config',function (err,data) {
         if (err) {
             console.log(err)
         }
@@ -64,7 +64,7 @@ function ruleTableInit(){
 function settingInit() {
     let proxySetting = $("#proxyOnlySetting");
     let proxyModeSetting = $("#proxyModeSetting");
-    fs.readFile('./config/config.json',function (err,data) {
+    fs.readFile('./resources/app/config/config.json',function (err,data) {
         if(err){
             console.log(err)
         }
@@ -120,7 +120,7 @@ function getAlert(str) {
 
 function proxyTableInit(){
     $("#proxyTable").empty();
-    fs.readFile('./config/config.json',function (err,data) {
+    fs.readFile('./resources/app/config/config.json',function (err,data) {
         if(err){
             console.log(err)
         }

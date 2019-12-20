@@ -72,7 +72,7 @@ func (gui *GUI) createWindow() {
 
 func (gui *GUI) addExtrasOptionToWindow() {
 	// Open dev tools
-	_ = gui.Window.OpenDevTools()
+	//_ = gui.Window.OpenDevTools()
 
 	// Close dev tools
 	//w.CloseDevTools()
