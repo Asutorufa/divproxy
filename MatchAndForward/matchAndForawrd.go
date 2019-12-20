@@ -2,7 +2,7 @@ package MatchAndForward
 
 import (
 	"divproxy/config"
-	"divproxy/net/forward"
+	getproxyconn "divproxy/net/forward"
 	"divproxy/net/matcher"
 	"errors"
 	"log"
@@ -30,7 +30,7 @@ func (ForwardTo *ForwardTo) log(v ...interface{}) {
 	if ForwardTo.Log != nil {
 		ForwardTo.Log(v)
 	} else {
-		log.Println(v)
+		log.Println(v...)
 	}
 }
 

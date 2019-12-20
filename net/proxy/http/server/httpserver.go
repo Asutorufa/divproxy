@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-// HTTPServer like name
+// HTTPServer http server
 type HTTPServer struct {
 	HTTPListener *net.TCPListener
 	HTTPServer   string
@@ -24,6 +24,12 @@ type HTTPServer struct {
 	cancel       context.CancelFunc
 }
 
+// NewHTTPServer create new HTTP server
+// server: http listener host
+// port: http listener port
+// username: http server username
+// password: http server password
+// forwardTo: if you want to forward to another server,create a function that return net.Conn and use it,if not use nil
 func NewHTTPServer(server, port, username, password string, forwardTo func(host string) (net.Conn, error)) (*HTTPServer, error) {
 	HTTPServer := &HTTPServer{
 		HTTPServer: server,
@@ -63,6 +69,7 @@ func (HTTPServer *HTTPServer) httpProxyInit() error {
 	return nil
 }
 
+// Close close http server listener
 func (HTTPServer *HTTPServer) Close() error {
 	defer func() {
 		if err := recover(); err != nil {
@@ -212,6 +219,31 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest(client net.Conn) error {
 	return nil
 }
 
+func forward(server, client net.Conn) {
+	CloseSig := make(chan error, 0)
+	go pipe(server, client, CloseSig)
+	go pipe(client, server, CloseSig)
+	<-CloseSig
+	<-CloseSig
+	close(CloseSig)
+}
+
+func pipe(src, dst net.Conn, closeSig chan error) {
+	buf := make([]byte, 0x400*32)
+	for {
+		n, err := src.Read(buf[0:])
+		if n == 0 || err != nil {
+			closeSig <- err
+			return
+		}
+		_, err = dst.Write(buf[0:n])
+		if err != nil {
+			closeSig <- err
+			return
+		}
+	}
+}
+
 func (HTTPServer *HTTPServer) httpHandleClientRequest2(client net.Conn) error {
 	/*
 		use golang http
@@ -318,28 +350,4 @@ func (HTTPServer *HTTPServer) httpHandleClientRequest2(client net.Conn) error {
 
 	forward(server, client)
 	return nil
-}
-
-func forward(server, client net.Conn) {
-	CloseSig := make(chan error, 0)
-	go pipe(server, client, CloseSig)
-	go pipe(client, server, CloseSig)
-	<-CloseSig
-	<-CloseSig
-	close(CloseSig)
-}
-func pipe(src, dst net.Conn, closeSig chan error) {
-	buf := make([]byte, 0x400*32)
-	for {
-		n, err := src.Read(buf[0:])
-		if n == 0 || err != nil {
-			closeSig <- err
-			return
-		}
-		_, err = dst.Write(buf[0:n])
-		if err != nil {
-			closeSig <- err
-			return
-		}
-	}
 }

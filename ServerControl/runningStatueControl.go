@@ -3,8 +3,8 @@ package ServerControl
 import (
 	"divproxy/MatchAndForward"
 	config2 "divproxy/config"
-	"divproxy/net/proxy/http/server"
-	"divproxy/net/proxy/socks5/server"
+	httpserver "divproxy/net/proxy/http/server"
+	socks5server "divproxy/net/proxy/socks5/server"
 	"errors"
 	"fmt"
 	"log"

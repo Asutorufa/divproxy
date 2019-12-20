@@ -22,6 +22,12 @@ type ServerSocks5 struct {
 	conn      *net.TCPListener
 }
 
+// NewSocks5Server create new socks5 listener
+// server: socks5 listener host
+// port: socks5 listener port
+// username: socks5 server username
+// password: socks5 server password
+// forwardTo: if you want to forward to another server,create a function that return net.Conn and use it,if not use nil
 func NewSocks5Server(server, port, username, password string, forwardTo func(host string) (net.Conn, error)) (*ServerSocks5, error) {
 	socks5Server := &ServerSocks5{
 		Server:    server,
@@ -81,6 +87,7 @@ func (socks5Server *ServerSocks5) socks5AcceptARequest() error {
 	return nil
 }
 
+// Close close socks5 listener
 func (socks5Server *ServerSocks5) Close() error {
 	defer func() {
 		if err := recover(); err != nil {
