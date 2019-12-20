@@ -1,16 +1,15 @@
 const $ = require('jquery');
 const fs = require('fs');
 const readline = require('readline');
-// This will wait for the astilectron namespace to be ready
-document.addEventListener('astilectron-ready', function() {
-    // This will send a message to GO
-    // astilectron.sendMessage("hello", function(message) {
-    //     console.log("received " + message)
-    // });
-
-});
 
 
+function getAlert(str) {
+    return `
+<div class="alert alert-success alert-dismissible fade show">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+  <strong>${str}</strong>
+</div>`
+}
 
 function View(view) {
     if (view === "proxy") {
@@ -26,6 +25,30 @@ function View(view) {
     $("#collapsibleNavbar").collapse('hide');
 }
 
+
+$("document").ready(
+    function () {
+        $('[data-toggle="popover"]').popover()
+    }
+);
+
+$("#refreshSettingButton").click(
+    function () {
+        settingInit();
+        $("#settingWar").html(getAlert("refresh setting!"));
+    }
+);
+
+function editProxyModalShow(name,scheme,host) {
+    $("#editProxyName").val(name);
+    $("#editProxyScheme").val(scheme.toUpperCase());
+    $("#editProxyHost").val(host);
+    $("#myModalEditProxy").modal('show')
+}
+
+/*
+            Init Start
+ */
 function ruleTableInit(){
     const rl = readline.createInterface({
         input: fs.createReadStream('./resources/app/config/rule.config')
@@ -109,15 +132,6 @@ function settingInit() {
     )
 }
 
-function getAlert(str) {
-    return `
-<div class="alert alert-success alert-dismissible fade show">
-  <button type="button" class="close" data-dismiss="alert">&times;</button>
-  <strong>${str}</strong>
-</div>`
-}
-
-
 function proxyTableInit(){
     $("#proxyTable").empty();
     fs.readFile('./resources/app/config/config.json',function (err,data) {
@@ -143,23 +157,6 @@ function proxyTableInit(){
         }
     })
 }
-
-$("document").ready(
-    function () {
-        $('[data-toggle="popover"]').popover()
-    }
-);
-
-$("#refreshSettingButton").click(
-    function () {
-        settingInit();
-        $("#settingWar").html(getAlert("refresh setting!"));
-    }
-);
-
-function editProxyModalShow(name,scheme,host) {
-    $("#editProxyName").val(name);
-    $("#editProxyScheme").val(scheme.toUpperCase());
-    $("#editProxyHost").val(host);
-    $("#myModalEditProxy").modal('show')
-}
+/*
+            Init end
+*/

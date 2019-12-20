@@ -32,8 +32,6 @@ func (gui *GUI) guiInit() {
 	if err != nil {
 		astilog.Fatal(errors.Wrap(err, "main: creating astilectron failed"))
 	}
-	//defer gui.Accelerator.Close()
-
 	// Handle signals
 	gui.Accelerator.HandleSignals()
 
@@ -70,12 +68,55 @@ func (gui *GUI) createWindow() {
 	gui.server.Log = log
 }
 
+func (gui *GUI) createTrayIcon() {
+	// New tray
+	var t = gui.Accelerator.NewTray(&astilectron.TrayOptions{
+		Image:   astilectron.PtrStr("resources/icon.png"),
+		Tooltip: astilectron.PtrStr("Tray's tooltip"),
+	})
+
+	// Create tray
+	_ = t.Create()
+
+	// New tray menu
+	var m = t.NewMenu([]*astilectron.MenuItemOptions{
+		{
+			Label: astilectron.PtrStr("Root 1"),
+			SubMenu: []*astilectron.MenuItemOptions{
+				{Label: astilectron.PtrStr("Item 1")},
+				{Label: astilectron.PtrStr("Item 2")},
+				{Type: astilectron.MenuItemTypeSeparator},
+				{Label: astilectron.PtrStr("Item 3")},
+			},
+		},
+		{
+			Label: astilectron.PtrStr("Root 2"),
+			SubMenu: []*astilectron.MenuItemOptions{
+				{Label: astilectron.PtrStr("Item 1")},
+				{Label: astilectron.PtrStr("Item 2")},
+			},
+		},
+	})
+
+	// Create the menu
+	_ = m.Create()
+
+	// Change tray's image
+	//time.Sleep(time.Second)
+	//t.SetImage("/path/to/image-2.png")
+}
+
 func (gui *GUI) addExtrasOptionToWindow() {
 	// Open dev tools
 	//_ = gui.Window.OpenDevTools()
 
 	// Close dev tools
 	//w.CloseDevTools()
+
+	gui.Window.On(astilectron.EventNameWindowCmdClose, func(e astilectron.Event) (deleteListener bool) {
+		astilog.Info("close", "close")
+		return
+	})
 }
 
 func (gui *GUI) addListenerToWindows() {
@@ -90,7 +131,6 @@ func (gui *GUI) addListenerToWindows() {
 	//	astilog.Debugf("received %s", s)
 	//	fmt.Println(s)
 	//})
-	//_ = w.SendMessage("hello")
 
 	// This will listen to messages sent by Javascript
 	gui.Window.OnMessage(func(m *astilectron.EventMessage) interface{} {
@@ -214,6 +254,7 @@ func (gui *GUI) addListenerToWindows() {
 func (gui *GUI) CreateGUI() {
 	gui.guiInit()
 	gui.createWindow()
+	//gui.createTrayIcon()
 	gui.addExtrasOptionToWindow()
 	gui.addListenerToWindows()
 	// Blocking pattern
