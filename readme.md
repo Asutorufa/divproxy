@@ -5,15 +5,24 @@
 ## server
 
 ```shell
-+---+                +----------------------------+
-|i  |                |                            |
-|n  |--------------->|        divproxy            |
-|b  |                |   +-------------------+    |
-|o  |--------------->|   |match domain/cidr  |------------------>
-|u  |                |   |select one outbound|    |
-|n  |--------------->|   +-------------------+    |            
-|d  |                |                            |
-+---+                +----------------------------+
+                   +--+----------------------------+              +-+
++--+               |i |                            |              |r|
+|c |               |n |        divproxy            |              |e|
+|l |               |b |   +-------------------+    |              |m|
+|i |-------------->|o |-->|match domain/cidr  |----|------------->|o|
+|e |<--------------|u |<--|select one outbound|<---|--------------|t|
+|n |               |n |   +-------------------+    |              |e|
+|t |               |d |                            |              +-+
++--+               +--+----------------------------+               
+                                          ^|
+                                          ||
+                                          ||
+ +-+      +-----------------------+       ||
+ |u|      |        electron       |       ||
+ |s|----->|        view log       |-------+|
+ |e|----->|      change config    |<-------+
+ |r|      |        add proxy      |
+ +-+      +-----------------------+
 ```
 
 ### socks5
@@ -112,6 +121,34 @@ ATYP BND.ADDR类型
 BND.ADDR 服务器绑定的地址
 BND.PORT 网络字节序表示的服务器绑定的端口
 ```
+
+### HTTP/HTTPS
+
+#### HTTPS->CONNECT 请求
+
+验证用户密码,确认通过后返回:`HTTP/1.1 200 Connection established\r\n\r\n`,之后的数据直接转发.
+
+#### GET/POST/...
+
+更改`Proxy-Connection`请求头,确认是否需要`Keep-Alive`.
+
+##### Keep-Alive
+
+http头部`Connection: Keep-Alive`代表连接请求保持长连接  
+**如果是http代理,必须处理`Proxy-Connection: Keep-Alive`为`Connection: Keep-Alive`,如果代理没有实现`Keep-Alive`就不变或者将Connection设为close.**
+
+优点:减少握手次数,如下图(图来源文章最下面)
+![keep-alive](https://milestone-of-se.nesuke.com/wp-content/uploads/2018/12/http-keepalive-2v2.png)
+
+###### 判断一次连接的传输结束
+
+ - 使用消息首部字段`Conent-Length`
+
+    `Conent-Length`表示实体内容长度，客户端（服务器）可以根据这个值来判断数据是否接收完成。
+
+ -  使用`Transfer-Encoding: chunked`
+
+    chunk编码将数据分成一块一块的发生。Chunked编码将使用若干个Chunk串连而成，由一个标明长度为0的chunk标示结束。
 
 ### DNS
 
