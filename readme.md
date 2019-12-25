@@ -4,6 +4,18 @@
 
 ## server
 
+在网络层的位置:
+
+```
++---------------------+
+|    application      |
++---------------------+
+|      divproxy       |   <-----
++---------------------+
+|     transport       |
++---------------------+
+```
+
 ```shell
                    +--+----------------------------+              +-+
 +--+               |i |                            |              |r|
@@ -137,7 +149,7 @@ BND.PORT 网络字节序表示的服务器绑定的端口
 http头部`Connection: Keep-Alive`代表连接请求保持长连接  
 **如果是http代理,必须处理`Proxy-Connection: Keep-Alive`为`Connection: Keep-Alive`,如果代理没有实现`Keep-Alive`就不变或者将Connection设为close.**
 
-优点:减少握手次数,如下图(图来源文章最下面)
+优点:减少握手次数,如下图
 ![keep-alive](https://milestone-of-se.nesuke.com/wp-content/uploads/2018/12/http-keepalive-2v2.png)
 
 ###### 判断一次连接的传输结束
@@ -209,6 +221,8 @@ http头部`Connection: Keep-Alive`代表连接请求保持长连接
 ```
 
 ## matcher
+
+对域名和cidr的匹配使用前缀树实现:
 
 ```shell
             root

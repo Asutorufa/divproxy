@@ -16,9 +16,9 @@ func TestNewMatcher(t *testing.T) {
 }
 
 func TestNewMatcherWithFile(t *testing.T) {
-	matcher, err := NewMatcherWithFile("119.29.29.29:53", "../../rule/rule.config")
+	matcher, err := NewMatcherWithFile("119.29.29.29:53", "../../resources/app/config/rule.config")
 	if err != nil {
-		t.Error(err)
+		t.Log(err)
 	}
 	t.Log(matcher.MatchStr("10.2.2.1"))
 	t.Log(matcher.MatchStr("www.baidu.com"))

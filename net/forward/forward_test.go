@@ -6,13 +6,13 @@ import (
 )
 
 func TestForward(t *testing.T) {
-	URI, err := url.Parse("socks5://127.0.0.1:7891")
+	URI, err := url.Parse("socks5://127.0.0.1:1080")
 	if err != nil {
 		t.Error(err)
 	}
 	t.Log(ForwardTo("www.google.com:443", *URI))
 
-	URI, err = url.Parse("http://127.0.0.1:7980")
+	URI, err = url.Parse("http://127.0.0.1:1080")
 	if err != nil {
 		t.Error(err)
 	}
