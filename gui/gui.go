@@ -48,7 +48,7 @@ func (gui *GUI) guiInit() {
 func (gui *GUI) createWindow() {
 	// New window
 	var err error
-	if gui.Window, err = gui.Accelerator.NewWindow("resources/app/index.html", &astilectron.WindowOptions{
+	if gui.Window, err = gui.Accelerator.NewWindow("resources/build/index.html", &astilectron.WindowOptions{
 		Center: astiptr.Bool(true),
 		Height: astiptr.Int(600),
 		Width:  astiptr.Int(1110),
@@ -108,7 +108,7 @@ func (gui *GUI) createTrayIcon() {
 
 func (gui *GUI) addExtrasOptionToWindow() {
 	// Open dev tools
-	//_ = gui.Window.OpenDevTools()
+	_ = gui.Window.OpenDevTools()
 
 	// Close dev tools
 	//w.CloseDevTools()

@@ -4,7 +4,7 @@
             "Scheme": "socks5",
             "Opaque": "",
             "User": null,
-            "Host": "127.0.0.1:7891",
+            "Host": "127.0.0.1:7890",
             "Path": "",
             "RawPath": "",
             "ForceQuery": false,
