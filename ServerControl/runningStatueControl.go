@@ -6,7 +6,6 @@ import (
 	httpserver "divproxy/net/proxy/http/server"
 	socks5server "divproxy/net/proxy/socks5/server"
 	"errors"
-	"fmt"
 	"log"
 	"net/url"
 )
@@ -33,24 +32,24 @@ func (ServerControl *ServerControl) serverControlInit() {
 	}
 }
 
-func (ServerControl *ServerControl) ServerStart() {
+func (ServerControl *ServerControl) ServerStart() error {
 	ServerControl.serverControlInit()
 	var err error
 	socks5, err := url.Parse("//" + ServerControl.config.Setting.Socks5)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	ServerControl.Socks5, err = socks5server.NewSocks5Server(socks5.Hostname(), socks5.Port(), "", "", ServerControl.forward.Forward)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	http, err := url.Parse("//" + ServerControl.config.Setting.HTTP)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	ServerControl.HttpS, err = httpserver.NewHTTPServer(http.Hostname(), http.Port(), "", "", ServerControl.forward.Forward)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	go func() {
 		if err := ServerControl.Socks5.Socks5(); err != nil {
@@ -63,6 +62,7 @@ func (ServerControl *ServerControl) ServerStart() {
 			log.Println(err)
 		}
 	}()
+	return nil
 }
 
 func (ServerControl *ServerControl) ServerStop() (err error) {
@@ -84,10 +84,13 @@ func (ServerControl *ServerControl) ServerStop() (err error) {
 	return errors.New("not Start")
 }
 
-func (ServerControl *ServerControl) ServerRestart() {
+func (ServerControl *ServerControl) ServerRestart() error {
 	if err := ServerControl.ServerStop(); err != nil {
-		fmt.Println(err)
+		return err
 	} else {
-		ServerControl.ServerStart()
+		if err = ServerControl.ServerStart(); err != nil {
+			return err
+		}
 	}
+	return nil
 }

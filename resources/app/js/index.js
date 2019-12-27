@@ -28,7 +28,7 @@ function View(view) {
 
 $("document").ready(
     function () {
-        $('[data-toggle="popover"]').popover()
+        $('[data-toggle="popover"]').popover();
     }
 );
 
@@ -66,7 +66,7 @@ function ruleTableInit(){
     });
 
 
-    fs.readFile('./resources/app/config/rule.config',function (err,data) {
+    fs.readFile('./resources/app/config/config.json',function (err,data) {
         if (err) {
             console.log(err)
         }

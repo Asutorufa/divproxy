@@ -108,7 +108,7 @@ func (gui *GUI) createTrayIcon() {
 
 func (gui *GUI) addExtrasOptionToWindow() {
 	// Open dev tools
-	_ = gui.Window.OpenDevTools()
+	//_ = gui.Window.OpenDevTools()
 
 	// Close dev tools
 	//w.CloseDevTools()
@@ -161,14 +161,18 @@ func (gui *GUI) addListenerToWindows() {
 
 		switch {
 		case s == "startProxy://":
-			gui.server.ServerStart()
+			if err := gui.server.ServerStart(); err != nil {
+				return err.Error()
+			}
 			return "start"
 		case s == "restartProxy://":
-			gui.server.ServerRestart()
+			if err := gui.server.ServerRestart(); err != nil {
+				return err.Error()
+			}
 			return "restart"
 		case s == "stopProxy://":
 			if err := gui.server.ServerStop(); err != nil {
-				return err
+				return err.Error()
 			}
 			return "stop"
 		case addProxyRe.MatchString(s):

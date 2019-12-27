@@ -1,5 +1,4 @@
 import React from 'react';
-
 function Nav() {
     return(
         <nav className="navbar navbar-expand-sm bg-light navbar-light fixed-top" role="navigation">

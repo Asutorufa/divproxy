@@ -7,3 +7,6 @@
 /tmp/
 start.sh
 /output/
+/DivProxyReact/.idea/
+/DivProxyReact/build/
+/DivProxyReact/node_modules/
