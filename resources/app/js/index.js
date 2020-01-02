@@ -32,12 +32,6 @@ $("document").ready(
     }
 );
 
-$("#refreshSettingButton").click(
-    function () {
-        settingInit();
-        $("#settingWar").html(getAlert("refresh setting!"));
-    }
-);
 
 function editProxyModalShow(name,scheme,host) {
     $("#editProxyName").val(name);
