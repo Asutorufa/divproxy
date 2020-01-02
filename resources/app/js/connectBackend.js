@@ -132,6 +132,14 @@ document.addEventListener('astilectron-ready', function() {
         }
     );
 
+
+    $("#refreshSettingButton").click(
+        function () {
+            settingInit();
+            $("#settingWar").html(getAlert("refresh setting!"));
+        }
+    );
+
 });
 
 
